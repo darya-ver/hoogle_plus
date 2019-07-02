@@ -2,7 +2,6 @@
 module Types.Experiments where
 
 import Types.Type
-import Types.Encoder
 import Types.Program
 import Synquid.Program
 import Synquid.Error

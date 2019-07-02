@@ -319,7 +319,9 @@ resetEncoder env dst = do
     writeLog 2 "resetEncoder" $ text "return type is" <+> pretty tgt
     (loc, musters, rets, funcs, tid2tr) <- prepEncoderArgs env tgt
     let srcStr = map show srcTypes
-    liftIO $ encoderInit loc musters srcStr rets funcs tid2tr
+    chan <- gets $ view messageChan
+    searchparams <- gets $ view searchParams
+    liftIO $ encoderInit searchparams chan loc musters srcStr rets funcs tid2tr
 
 incEncoder :: MonadIO m => Environment -> EncodeState -> PNSolver m EncodeState
 incEncoder env st = do

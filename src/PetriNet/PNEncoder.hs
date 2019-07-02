@@ -24,10 +24,12 @@ import System.CPUTime
 import Text.Printf
 import Data.Text (pack, unpack, replace)
 import System.IO
+import Control.Concurrent.Chan
 
 import Types.Common
 import Types.Encoder
 import Types.Abstract
+import Types.Experiments
 import PetriNet.AbstractType
 import Synquid.Util
 import Synquid.Pretty
@@ -201,11 +203,33 @@ solveAndGetModel = do
             Just i -> mkEq pVar i
             Nothing -> error $ "cannot eval the variable" ++ show k
 
-encoderInit :: Int -> HashMap Id [Id] -> [Id] -> [Id] -> [FunctionCode] -> HashMap Id [Id] -> IO EncodeState
-encoderInit loc hoArgs inputs rets sigs t2tr = do
+encoderInit :: SearchParams -> Chan Message -> Int -> HashMap Id [Id] -> [Id] -> [Id] -> [FunctionCode] -> HashMap Id [Id] -> IO EncodeState
+encoderInit searchParams chan loc hoArgs inputs rets sigs t2tr = do
     z3Env <- initialZ3Env
     false <- Z3.mkFalse (envContext z3Env)
-    let initialState = EncodeState z3Env 0 false loc 0 1 HashMap.empty HashMap.empty HashMap.empty HashMap.empty hoArgs t2tr False [] rets [] [] [] []
+    let initialState = EncodeState{
+        encoderSearchParams=searchParams,
+        encoderChan=chan,
+        z3env=z3Env,
+        counter=0,
+        block=false,
+        loc=loc,
+        transitionNb=0,
+        variableNb=1,
+        place2variable=HashMap.empty,
+        time2variable=HashMap.empty,
+        transition2id=HashMap.empty,
+        id2transition=HashMap.empty,
+        mustFirers=hoArgs,
+        ty2tr=t2tr,
+        prevChecked=False,
+        disabledTrans=[],
+        returnTyps=rets,
+        persistConstraints=[],
+        optionalConstraints=[],
+        finalConstraints=[],
+        blockConstraints=[]
+    }
     execStateT (createEncoder inputs (head rets) sigs) initialState
 
 encoderSolve :: EncodeState -> IO ([(Id, Int)], EncodeState)
