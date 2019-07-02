@@ -57,16 +57,24 @@ createEncoder inputs ret sigs = do
 setInitialState :: [Id] -> [Id] -> Encoder ()
 setInitialState inputs places = do
     let nonInputs = filter (`notElem` inputs) places
-    let inputCounts = map (\t -> (head t, length t)) (group (sort inputs))
+    let inputCounts = map (\t -> (head t, -1 * length t)) (group (sort inputs))
     let nonInputCounts = map (\t -> (t, if t == "void" then 1 else 0)) nonInputs
     let typeCounts = inputCounts ++  nonInputCounts
     -- assign tokens to each types
     mapM_ (uncurry assignToken) typeCounts
   where
+    -- assignToken sets the token requirement for each place/value pair
     assignToken p v = do
         placeMap <- gets place2variable
         tVar <- mkZ3IntVar $ findVariable "place2variable" (p, 0) placeMap
-        eq <- mkIntNum v >>= mkEq tVar
+        eq <- ifM (getExperiment _disableRelevancy) (do
+                num <- mkIntNum (abs v)
+                if v < 0 -- We encoded input counts as negative numbers
+                    then mkLe tVar num -- May use any but not more than those args
+                    else mkEq tVar num
+                ) (
+                mkIntNum (abs v) >>= mkEq tVar -- regular case
+                )
         modify $ \st -> st { optionalConstraints = eq : optionalConstraints st }
 
 -- | set the final solver state, we allow only one token in the return type
@@ -523,3 +531,12 @@ mustFireTransitions = do
         fires <- mapM fireTransition mustTrans
         toFire <- mkOr (concat fires)
         modify $ \st -> st { optionalConstraints = toFire : optionalConstraints st }
+
+writeLog level tag msg = do
+    mesgChan <- gets $ encoderChan
+    liftIO $ writeChan mesgChan (MesgLog level tag $ show $ plain msg)
+
+getExperiment :: (SearchParams -> a) -> Encoder a
+getExperiment exp = do
+    sps <- gets encoderSearchParams
+    return (exp sps)

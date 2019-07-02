@@ -38,7 +38,8 @@ data SearchParams = SearchParams {
   _stopRefine :: Bool,
   _threshold :: Int,
   _disableDemand :: Bool,
-  _coalesceTypes :: Bool
+  _coalesceTypes :: Bool,
+  _disableRelevancy :: Bool
 } deriving (Eq, Show)
 
 makeLenses ''SearchParams
@@ -54,7 +55,8 @@ defaultSearchParams = SearchParams {
   _stopRefine = False,
   _threshold = 10,
   _disableDemand = False,
-  _coalesceTypes = True
+  _coalesceTypes = True,
+  _disableRelevancy = False
 }
 data TimeStatistics = TimeStatistics {
   encodingTime :: Double,

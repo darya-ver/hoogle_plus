@@ -74,7 +74,7 @@ main = do
   case res of
     Synthesis {file, libs, env_file_path_in, app_max, log_, sol_num,
       higher_order, use_refine, disable_demand,
-      stop_refine, stop_threshold, disable_coalescing} -> do
+      stop_refine, stop_threshold, disable_coalescing, disable_relevancy} -> do
       let searchParams = defaultSearchParams {
         _maxApplicationDepth = app_max,
         _explorerLogLevel = log_,
@@ -84,7 +84,8 @@ main = do
         _stopRefine = stop_refine,
         _threshold = stop_threshold,
         _disableDemand = disable_demand,
-        _coalesceTypes = not disable_coalescing
+        _coalesceTypes = not disable_coalescing,
+        _disableRelevancy = disable_relevancy
         }
       let synquidParams = defaultSynquidParams {
         Main.envPath = env_file_path_in
@@ -130,7 +131,8 @@ data CommandLineArgs
         stop_refine :: Bool,
         stop_threshold :: Int,
         disable_demand :: Bool,
-        disable_coalescing :: Bool
+        disable_coalescing :: Bool,
+        disable_relevancy :: Bool
       }
       | Generate {
         -- | Input
@@ -156,7 +158,8 @@ synt = Synthesis {
   stop_refine         = False           &= help ("Stop refine the abstraction cover after some threshold (default: False)"),
   stop_threshold      = 10              &= help ("Refinement stops when the number of places reaches the threshold, only when stop_refine is True"),
   disable_demand = False &= name "d" &= help ("Disable the demand analyzer (default: False)"),
-  disable_coalescing = False &= name "xc" &= help ("Do not coalesce transitions in the net with the same abstract type")
+  disable_coalescing = False &= name "xc" &= help ("Do not coalesce transitions in the net with the same abstract type"),
+  disable_relevancy = False &= name "r" &= help ("Disable the relevancy requirement")
   } &= auto &= help "Synthesize goals specified in the input file"
 
 generate = Generate {
