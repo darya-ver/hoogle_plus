@@ -26,6 +26,7 @@ import Data.Tuple
 import Text.Printf
 import System.FilePath.Posix
 import Data.Char (toLower)
+import Debug.Trace
 
 deriving instance Eq Color
 
@@ -44,11 +45,12 @@ table = zip [
 -- Sorts benchmarks per setup and plots as lines.
 mkPlot :: Maybe FilePath -> ExperimentSetup -> [ResultSummary] -> IO ()
 mkPlot outputFile setup results = do
-    let options = [Title "test title", Color Red, Style Lines]
     let groupedResults = groupMapBy (\rs -> (envName rs, paramName rs)) results
     let plotDataWithTitle = getPlotData setup groupedResults
     let plotOptions = getPlotOptions plotDataWithTitle
     let plotData = map snd plotDataWithTitle
+    print groupedResults
+    print plotDataWithTitle
     let options2d = []
     let plots = zipWith (\pd opts -> Data2D opts options2d pd) plotData plotOptions
     let outputFormat = getOutputFormat outputFile

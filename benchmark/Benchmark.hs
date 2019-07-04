@@ -84,7 +84,6 @@ readQueryFile fp = do
 getSetup args = do
   let preset = argsPreset args
   componentSet <- generateEnv $ getOptsFromPreset preset
-  componentOldSet <- generateEnv $ getOptsFromPreset ICFPPartial
   queries <- readQueryFile (argsQueryFile args)
   let envs = [(componentSet, show preset)]
   let currentExperiment = argsExperiment args
@@ -116,8 +115,16 @@ getSetup args = do
           TrackTypesAndTransitions -> [
             (searchParamsTyGarQ{_coalesceTypes=True}, expTyGarQ),
             (searchParamsTyGarQ{_coalesceTypes=False}, expTyGarQNoCoalesce)]
-  let exps =
-        case currentExperiment of
-          CompareEnvironments -> mkExperiments ((componentOldSet, show ICFPPartial):envs) queries params
-          _ ->  mkExperiments envs queries params
+  exps <- case currentExperiment of
+          CompareEnvironments -> do
+            icfp <- generateEnv $ getOptsFromPreset ICFPPartial
+            poplList <- generateEnv poplWithTypeclassesList
+            icfpList <- generateEnv genOptsTier2List
+            popl <- generateEnv poplWithTypeclasses
+            let envs = [(poplList, "POPL-List"),
+                          (icfpList, "ICFP-List"),
+                          (icfp, "ICFP"),
+                          (popl, "POPL")]
+            return $ mkExperiments (envs) queries params
+          _ ->  return $ mkExperiments envs queries params
   return (envs, params, exps)

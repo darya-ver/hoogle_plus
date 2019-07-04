@@ -23,8 +23,23 @@ genOptsTier2 = genOptsTier1 {
       }
   }
 
+genOptsTier2List = genOptsTier1 {
+  modules = myModulesList,
+  pkgFetchOpts = Local {
+      files = ["libraries/base.txt", "libraries/bytestring.txt", "libraries/ghc-prim.txt"]
+      }
+  }
+
 poplWithTypeclasses = defaultGenerationOpts {
   modules = poplModules,
+  pkgFetchOpts = Local {
+    files = ["libraries/customPrelude.txt", "libraries/ghc-prim.txt",
+             "libraries/containers.txt"]
+  }
+}
+
+poplWithTypeclassesList = defaultGenerationOpts {
+  modules = poplModulesList,
   pkgFetchOpts = Local {
     files = ["libraries/customPrelude.txt", "libraries/ghc-prim.txt",
              "libraries/containers.txt"]
@@ -46,8 +61,31 @@ myModules = [
   "Data.ByteString.Builder"
   ]
 
+myModulesList = [
+  -- base
+  "Data.Int",
+  "Data.Bool",
+  "Data.Maybe",
+  "Data.Either",
+  "Data.Tuple",
+  "GHC.Char",
+  "Text.Show",
+  "Data.List",
+  -- ByteString
+  "Data.ByteString.Lazy",
+  "Data.ByteString.Builder"
+  ]
+
 poplModules = [
   "Prelude", -- This prelude in customPrelude is missing those with HK-tyvars and the zip >=3 family functions.
+  "GHC.List", -- This is Data.OldList to avoid a Foldable fiasco. We don't support those higher-kinded tyvars yet.
+  "Data.Maybe", "Data.Either",
+  "Data.Bool",
+  "Data.Set"]
+
+poplModulesList = [
+  "Prelude", -- This prelude in customPrelude is missing those with HK-tyvars and the zip >=3 family functions.
   "Data.List", -- This is Data.OldList to avoid a Foldable fiasco. We don't support those higher-kinded tyvars yet.
-  "Data.Maybe", "Data.Either", "Data.Bool",
+  "Data.Maybe", "Data.Either",
+  "Data.Bool",
   "Data.Set"]
