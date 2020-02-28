@@ -124,7 +124,7 @@ buildDupCheckProp (sol, otherSols) funcSig timeInMicro depth =
       [ printf "let dupProp = existsUnique $ \\%s -> monadic $ do {" argDecl
       , printf "evaluated <- mapM (\\f -> f %s) (%s);" argLine (formatResultList otherSols')
       , printf "resultL <- lhs %s;" argLine
-      , printf "if (not (resultL `Prelude.elem` evaluated)) then ((printDupResult %s (resultL:evaluated)) >> return True) else (return False)" argShow
+      , printf "if (not $ anyDuplicate (resultL:evaluated)) then ((printDupResult %s (resultL:evaluated)) >> return True) else (return False)" argShow
       , "} in"
       , printf "capture (smallCheckM %d dupProp)" depth] :: String
 
