@@ -30,6 +30,8 @@ import Types.Filtering
 import Synquid.Type
 import Paths_HooglePlus
 
+import Debug.Trace
+
 parseTypeString :: String -> FunctionSignature
 parseTypeString input = FunctionSignature constraints argsType returnType
   where
@@ -187,7 +189,7 @@ validateSolution modules solution funcSig time = do
         output' = preprocessOutput (unwords args) output
 
     preprocessOutput :: String -> String -> String
-    preprocessOutput input output = fromMaybe "N/A" (listToMaybe selectedLine)
+    preprocessOutput input output = trace ("ok: " ++ input ++ ", " ++ output) (fromMaybe "N/A" (listToMaybe selectedLine))
       where
         ios = nub $ filter ([] /=) $ lines output
         selectedLine = filter (isInfixOf input) ios
@@ -290,10 +292,20 @@ toParamListDecl args =
 
     plainArgLine = unwords $ map (formatParam . fst) indexedArgs
     declArgLine = unwords $ map toDecl indexedArgs
-    showArgLine = printf "[%s]" $ intercalate ", " $ map (formatShow . fst) indexedArgs
+    showArgLine = printf "[%s]" $ intercalate ", " $ map formatShow indexedArgs
 
     formatParam = printf "arg_%d" :: Int -> String
-    formatShow = printf "show arg_%d" :: Int -> String
+
+    formatShow :: (Int, ArgumentType) -> String
+    formatShow (index, argType) =
+      printf (if isFuncType argType then "showFunc arg_%d" else "show arg_%d") index
 
     toDecl :: (Int, ArgumentType) -> String
     toDecl (index, _) = printf "(Inner arg_%d)" index
+
+    isFuncType :: ArgumentType -> Bool
+    isFuncType (ArgTypeFunc _ _) = True
+    isFuncType (ArgTypeList x) = isFuncType x
+    isFuncType (ArgTypeApp _ x) = isFuncType x
+    isFuncType (ArgTypeTuple xs) = any isFuncType xs
+    isFuncType _ = False
