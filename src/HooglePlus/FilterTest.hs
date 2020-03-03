@@ -187,8 +187,10 @@ validateSolution modules solution funcSig time = do
         output' = preprocessOutput (unwords args) output
 
     preprocessOutput :: String -> String -> String
-    preprocessOutput input output = head $ filter (isInfixOf input) ios
-      where ios = nub $ filter ([] /=) $ lines output
+    preprocessOutput input output = fromMaybe "N/A" (listToMaybe selectedLine)
+      where
+        ios = nub $ filter ([] /=) $ lines output
+        selectedLine = filter (isInfixOf input) ios
 
 compareSolution :: [String] -> String -> [String] -> FunctionSignature -> Int -> IO (Either InterpreterError (SmallCheckResult, [DiffInstance]))
 compareSolution modules solution otherSolutions funcSig time =
