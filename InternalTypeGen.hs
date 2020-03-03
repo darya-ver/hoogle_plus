@@ -27,12 +27,9 @@ instance SS.Serial m a => SS.Serial m (Inner a) where series = SS.newtypeCons In
 instance (SF.ShowFunction a) => Show (Inner a) where
   show (Inner fcn) = SF.showFunctionLine defaultShowFunctionDepth fcn
 
-formOutput :: [String] -> CB.Result String -> String
-formOutput args ret = unwords args ++ " ==> " ++ (showCBResult ret)
-
-printDupResult :: [String] -> [CB.Result String] -> IO ()
-printDupResult args rets = (putStrLn . show) result
-  where result = (unwords args, map showCBResult rets) :: (String, [String])
+printIOResult :: [String] -> [CB.Result String] -> IO ()
+printIOResult args rets = (putStrLn . show) result
+  where result = (args, map showCBResult rets) :: ([String], [String])
 
 showCBResult :: CB.Result String -> String
 showCBResult = \case
@@ -43,11 +40,3 @@ showCBResult = \case
 
 anyDuplicate :: Eq a => [a] -> Bool
 anyDuplicate xs = length (nub xs) /= length xs
-
-showFunc :: SF.ShowFunction a => a -> String
-showFunc fcn = "(" ++ trimed ++ ")"
-  where
-    str = SF.showFunctionLine defaultShowFunctionDepth fcn
-    trimed = case (reverse str) of
-              ('.':'.':'.':' ':xs) -> reverse xs
-              _ -> str
