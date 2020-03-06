@@ -85,147 +85,13 @@ synthesize searchParams goal messageChan = do
           env'
               {_symbols = Map.withoutKeys syms $ Set.fromList hoCands, _hoCandidates = []}
 
-        -- if useHO -- add higher order query arguments
-        --     then do
-    --------------------------
-    -- IGNORE PARTS BELOW THIS
-    --------------------------
-                -- let args = env' ^. arguments
-                -- let hoArgs = Map.filter (isFunctionType . toMonotype) args
-                -- let hoFuns = map (\(k, v) -> (k ++ hoPostfix, toFunType v)) (Map.toList hoArgs)
-                -- return $
-                --     env'
-                --         { _symbols = rawSyms `Map.union` Map.fromList hoFuns
-                --         , _hoCandidates = hoCands ++ map fst hoFuns
-                --         }
-    --------------------------
-    -- IGNORE PARTS ABOVE THIS
-    --------------------------
-            -- else do
-            --     let syms = Map.filter (not . isHigherOrder . toMonotype) rawSyms
-            --     return $
-            --         env'
-            --             {_symbols = Map.withoutKeys syms $ Set.fromList hoCands, _hoCandidates = []}
-
-    --putStrLn $ "Component number: " ++ show (Map.size $ allSymbols env)
-    --putStrLn $ "Hello world"
     let args = Monotype destinationType : Map.elems (env ^. arguments)
-    --print $ args
-    --print $ Monotype destinationType
-  -- start with all the datatypes defined in the components, first level abstraction
-
-    --------------------------
-    -- trying code Zheng gave us 
-    --------------------------
-
-    -- let rs2 = _refineStrategy searchParams
-    -- let initSolverState =
-    --         emptySolverState
-    --             { _searchParams = searchParams
-    --             , _abstractionCover =
-    --                   case rs2 of
-    --                       SypetClone -> Abstraction.firstLvAbs env (Map.elems (allSymbols env))
-    --                       TyGar0 -> emptySolverState ^. abstractionCover
-    --                       TyGarQ -> Abstraction.specificAbstractionFromTypes env args
-    --                       NoGar -> Abstraction.specificAbstractionFromTypes env args
-    --                       NoGar0 -> emptySolverState ^. abstractionCover
-    --             , _messageChan = messageChan
-    --             }
-
-    {-
-    case trial of
-      AnyT -> putStrLn $ "AnyT"
-      BotT -> putStrLn $ "botT"
-      ScalarT b@(TypeVarT _ id) _ -> putStrLn $ "isBound: " ++ show (isBound env id)
-      _    -> putStrLn $ "otherwise"
-
-    putStrLn $ "trial: " ++ show trial
-    putStrLn $ "trial2: " ++ show trial2
-    -}
-    {-
-    -- make an empty solver state to use in evalState
-    let initSolverState = emptySolverState { _messageChan = messageChan }
-
-
-    -- used trial just to get one type for testing (not real code)
-    let t1 = shape destinationType
-    let t2 = shape (ScalarT IntT ftrue)
-
-    putStrLn $ "t1: " ++ show t1
-    putStrLn $ "t2: " ++ show t2
-
-    putStrLn $ "here1" 
-
-    st' <- execStateT (solveTypeConstraint env t1 t2) initSolverState
-    putStrLn $ "here2" 
-
-
-    let args2 = allArgTypes destinationType
-    putStrLn $ "args: " ++ show (getArgTypes (Map.toList (env ^. arguments)))
-
-    let substitution =  st' ^. typeAssignment
-    let checkResult = st' ^. isChecked
-
-    putStrLn $ "sub: " ++ show substitution
-    putStrLn $ "checked: " ++ show checkResult
-
-    let ( (id, schema) : xs) = (Map.toList (env ^. symbols))
-    let blah = lastType (toMonotype schema)
-    putStrLn $ "blah: " ++ show (shape blah)
-    
-    st' <- execStateT (solveTypeConstraint env t1 (shape blah)) initSolverState
-    -}
-    
-
-    -- -}
-    --let cons’ = stypeSubstitution substitution (shape $ toMonotype cons)
-
-    --------------------------
-    -- trying code Zheng gave us 
-    --------------------------
-
-    -- this is code we don't want I think below
-    {-
-    let rs = _refineStrategy searchParams
-    let is =
-            emptySolverState
-                { _searchParams = searchParams
-                , _abstractionCover =
-                      case rs of
-                          SypetClone -> Abstraction.firstLvAbs env (Map.elems (allSymbols env))
-                          TyGar0 -> emptySolverState ^. abstractionCover
-                          TyGarQ -> Abstraction.specificAbstractionFromTypes env args
-                          NoGar -> Abstraction.specificAbstractionFromTypes env args
-                          NoGar0 -> emptySolverState ^. abstractionCover
-                , _messageChan = messageChan
-                }
-    catch
-        (evalStateT (runPNSolver env destinationType) is)
-        (\e ->
-             writeChan messageChan (MesgLog 0 "error" (show e)) >>
-             writeChan messageChan (MesgClose (CSError e)))
-    -}
-
-
-    --print $ iterateOverEnv (Map.toList (env ^. symbols)) 
-
-    --let stc = solveTypeConstraint env trial trial2
-    -- putStrLn $ show  (pretty stc)
-    
-    -- putStrLn $ "st': " ++ show st'
-
-    --{-
-
-    -- this is code we don't want I think above
-    -- let initCompState = emptyComps
-
-    -- dfsTop env messageChan 3 ("start", shape destinationType)
-
-    -- cst' <- execStateT (getUnifiedFunctions env (Map.toList (env ^. symbols)) destinationType messageChan) initCompState
-
+ 
     putStrLn $ "monospec:" ++ show monospec
     putStrLn $ "goal:" ++ show goal
     putStrLn $ "destinationType:" ++ show destinationType
+
+    putStrLn $ "environment: " ++ show (env ^. symbols)
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
@@ -261,30 +127,6 @@ dfsTop env messageChan depth hole = flip evalStateT emptyComps $ do
 
 getUnifiedFunctions :: Environment -> Chan Message -> [(Id, RSchema)] -> SType -> StateT Comps IO [(Id, SType)]
 getUnifiedFunctions envv messageChan xs goalType = do
-  -- lift $ putStrLn $ "goalType: " ++ show goalType
-  
-  -- if (not $ isGround goalType) -- sometimes it returns (a -> b) - need to make sure we do just one of those
-  --   then do
-  --     -- return []
-  --     let allTypes = allArgTypes goalType ++ [lastType goalType]
-  --     lift $ putStrLn $ "allTypes: " ++ show allTypes
-  --     -- unifiedFuncs <- mapM (getUnifiedFunctions envv messageChan xs) args
-  --     fmap concat $ mapM (getUnifiedFunctions envv messageChan xs) allTypes
-  --   else do
-  --     modify $ set components []
-  --     st <- get
-  --     let memoized = st ^. memoize :: Map SType [(Id, SType)]
-  --     case Map.lookup goalType memoized of
-  --       Just cs -> do
-  --         -- lift $ putStrLn $ "already in there: " ++ show goalType
-  --         return cs
-  --       Nothing -> do
-  --         -- lift $ putStrLn $ "not in there yet: " ++ show goalType
-  --         helper envv messageChan xs goalType
-  --         st <- get
-  --         let cs = st ^. components
-  --         modify $ set memoize (Map.insert goalType cs (st ^. memoize))
-  --         return $ st ^. components
 
   modify $ set components []
   
@@ -335,20 +177,6 @@ getUnifiedFunctions envv messageChan xs goalType = do
 isGround :: SType -> Bool
 isGround (FunctionT id arg0 arg1) = False
 isGround _ = True
-
-------------------------
-{- 
-    * i've realized we can't do mapping stuff because substituation might be different
-    * and also it's printing out weird things for destination type:
-          schema: (a -> ((a -> ByteString) -> ByteString))
-          args: [a,(a -> ByteString)]
-      this means that the return type is still a function, so im not sure how getUnified is 
-      working with that
--}
-------------------------
-
-
-
 
 -- type MyProgram = String
 -- env, max depth, components, goal
@@ -483,3 +311,184 @@ dfs env messageChan depth (id, schema) = do
 -- toBlah (Monotype v) = shape v 
 -- toBlah (ForallT _ v) = toBlah v 
 -- toBlah PredSig v = toBlah v
+
+
+
+
+       -- if useHO -- add higher order query arguments
+        --     then do
+    --------------------------
+    -- IGNORE PARTS BELOW THIS
+    --------------------------
+                -- let args = env' ^. arguments
+                -- let hoArgs = Map.filter (isFunctionType . toMonotype) args
+                -- let hoFuns = map (\(k, v) -> (k ++ hoPostfix, toFunType v)) (Map.toList hoArgs)
+                -- return $
+                --     env'
+                --         { _symbols = rawSyms `Map.union` Map.fromList hoFuns
+                --         , _hoCandidates = hoCands ++ map fst hoFuns
+                --         }
+    --------------------------
+    -- IGNORE PARTS ABOVE THIS
+    --------------------------
+            -- else do
+            --     let syms = Map.filter (not . isHigherOrder . toMonotype) rawSyms
+            --     return $
+            --         env'
+            --             {_symbols = Map.withoutKeys syms $ Set.fromList hoCands, _hoCandidates = []}
+
+    --putStrLn $ "Component number: " ++ show (Map.size $ allSymbols env)
+    --putStrLn $ "Hello world"
+ 
+  -- lift $ putStrLn $ "goalType: " ++ show goalType
+  
+  -- if (not $ isGround goalType) -- sometimes it returns (a -> b) - need to make sure we do just one of those
+  --   then do
+  --     -- return []
+  --     let allTypes = allArgTypes goalType ++ [lastType goalType]
+  --     lift $ putStrLn $ "allTypes: " ++ show allTypes
+  --     -- unifiedFuncs <- mapM (getUnifiedFunctions envv messageChan xs) args
+  --     fmap concat $ mapM (getUnifiedFunctions envv messageChan xs) allTypes
+  --   else do
+  --     modify $ set components []
+  --     st <- get
+  --     let memoized = st ^. memoize :: Map SType [(Id, SType)]
+  --     case Map.lookup goalType memoized of
+  --       Just cs -> do
+  --         -- lift $ putStrLn $ "already in there: " ++ show goalType
+  --         return cs
+  --       Nothing -> do
+  --         -- lift $ putStrLn $ "not in there yet: " ++ show goalType
+  --         helper envv messageChan xs goalType
+  --         st <- get
+  --         let cs = st ^. components
+  --         modify $ set memoize (Map.insert goalType cs (st ^. memoize))
+  --         return $ st ^. components
+
+
+
+------------------------
+{- 
+    * i've realized we can't do mapping stuff because substituation might be different
+    * and also it's printing out weird things for destination type:
+          schema: (a -> ((a -> ByteString) -> ByteString))
+          args: [a,(a -> ByteString)]
+      this means that the return type is still a function, so im not sure how getUnified is 
+      working with that
+-}
+------------------------
+
+
+
+   --print $ args
+    --print $ Monotype destinationType
+  -- start with all the datatypes defined in the components, first level abstraction
+
+    --------------------------
+    -- trying code Zheng gave us 
+    --------------------------
+
+    -- let rs2 = _refineStrategy searchParams
+    -- let initSolverState =
+    --         emptySolverState
+    --             { _searchParams = searchParams
+    --             , _abstractionCover =
+    --                   case rs2 of
+    --                       SypetClone -> Abstraction.firstLvAbs env (Map.elems (allSymbols env))
+    --                       TyGar0 -> emptySolverState ^. abstractionCover
+    --                       TyGarQ -> Abstraction.specificAbstractionFromTypes env args
+    --                       NoGar -> Abstraction.specificAbstractionFromTypes env args
+    --                       NoGar0 -> emptySolverState ^. abstractionCover
+    --             , _messageChan = messageChan
+    --             }
+
+    {-
+    case trial of
+      AnyT -> putStrLn $ "AnyT"
+      BotT -> putStrLn $ "botT"
+      ScalarT b@(TypeVarT _ id) _ -> putStrLn $ "isBound: " ++ show (isBound env id)
+      _    -> putStrLn $ "otherwise"
+
+    putStrLn $ "trial: " ++ show trial
+    putStrLn $ "trial2: " ++ show trial2
+    -}
+    {-
+    -- make an empty solver state to use in evalState
+    let initSolverState = emptySolverState { _messageChan = messageChan }
+
+
+    -- used trial just to get one type for testing (not real code)
+    let t1 = shape destinationType
+    let t2 = shape (ScalarT IntT ftrue)
+
+    putStrLn $ "t1: " ++ show t1
+    putStrLn $ "t2: " ++ show t2
+
+    putStrLn $ "here1" 
+
+    st' <- execStateT (solveTypeConstraint env t1 t2) initSolverState
+    putStrLn $ "here2" 
+
+
+    let args2 = allArgTypes destinationType
+    putStrLn $ "args: " ++ show (getArgTypes (Map.toList (env ^. arguments)))
+
+    let substitution =  st' ^. typeAssignment
+    let checkResult = st' ^. isChecked
+
+    putStrLn $ "sub: " ++ show substitution
+    putStrLn $ "checked: " ++ show checkResult
+
+    let ( (id, schema) : xs) = (Map.toList (env ^. symbols))
+    let blah = lastType (toMonotype schema)
+    putStrLn $ "blah: " ++ show (shape blah)
+    
+    st' <- execStateT (solveTypeConstraint env t1 (shape blah)) initSolverState
+    -}
+    
+
+    -- -}
+    --let cons’ = stypeSubstitution substitution (shape $ toMonotype cons)
+
+    --------------------------
+    -- trying code Zheng gave us 
+    --------------------------
+
+    -- this is code we don't want I think below
+    {-
+    let rs = _refineStrategy searchParams
+    let is =
+            emptySolverState
+                { _searchParams = searchParams
+                , _abstractionCover =
+                      case rs of
+                          SypetClone -> Abstraction.firstLvAbs env (Map.elems (allSymbols env))
+                          TyGar0 -> emptySolverState ^. abstractionCover
+                          TyGarQ -> Abstraction.specificAbstractionFromTypes env args
+                          NoGar -> Abstraction.specificAbstractionFromTypes env args
+                          NoGar0 -> emptySolverState ^. abstractionCover
+                , _messageChan = messageChan
+                }
+    catch
+        (evalStateT (runPNSolver env destinationType) is)
+        (\e ->
+             writeChan messageChan (MesgLog 0 "error" (show e)) >>
+             writeChan messageChan (MesgClose (CSError e)))
+    -}
+
+
+    --print $ iterateOverEnv (Map.toList (env ^. symbols)) 
+
+    --let stc = solveTypeConstraint env trial trial2
+    -- putStrLn $ show  (pretty stc)
+    
+    -- putStrLn $ "st': " ++ show st'
+
+    --{-
+
+    -- this is code we don't want I think above
+    -- let initCompState = emptyComps
+
+    -- dfsTop env messageChan 3 ("start", shape destinationType)
+
+    -- cst' <- execStateT (getUnifiedFunctions env (Map.toList (env ^. symbols)) destinationType messageChan) initCompState
