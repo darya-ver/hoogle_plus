@@ -105,10 +105,12 @@ synthesize searchParams goal messageChan = do
     -- call DFS on all of those
     result <- dfsTop env messageChan 4 (shape destinationType)
 
+    let filtered = filter (\x -> (isInfixOf "one" x) && (isInfixOf "zero" x)) result
+    putStrLn $ unlines filtered 
     -- result <- dfs env messageChan 3 ("start", shape monospec)
 
     -- print the result
-    putStrLn $ "result:" ++ unlines result
+    -- putStrLn $ "result:" ++ unlines result
 
     --print $ cst' ^. components
     return () 
