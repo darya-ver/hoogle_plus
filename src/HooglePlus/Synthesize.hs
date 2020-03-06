@@ -79,6 +79,9 @@ synthesize searchParams goal messageChan = do
     let useHO = _useHO searchParams
     let rawSyms = env' ^. symbols
     let hoCands = env' ^. hoCandidates
+    
+    putStrLn $ "environment: " ++ show rawSyms
+
     env <- do
       let syms = Map.filter (not . isHigherOrder . toMonotype) rawSyms
       return $
@@ -91,7 +94,7 @@ synthesize searchParams goal messageChan = do
     putStrLn $ "goal:" ++ show goal
     putStrLn $ "destinationType:" ++ show destinationType
 
-    putStrLn $ "environment: " ++ show (env ^. symbols)
+    -- putStrLn $ "environment: " ++ show (env ^. symbols)
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
