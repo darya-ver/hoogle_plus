@@ -1,0 +1,62 @@
+
+
+
+DFS -> [(ground candidates)]
+1. if depth is 0, check  if itself is ground, return it, else return []
+2. if > 0 depth
+    if ground, same thing as step (1)
+    get args
+    
+    for each arg
+        list[arg] = call getUnified 
+        for each elem in list
+            list2[elem] = DFS elem
+    curr = "id"
+
+    //  1st arg
+    list3 = []
+    for program in arg1.list2:
+        list3.append(id ++ program)
+
+    // 2nd arg
+    list4 = []
+    for candidate in list3:
+        for elem in arg2.list2:
+            list4.append(candidate ++ elem)
+
+    // 3rd arg
+    list5 = []
+    for candidate in list4:
+        for program in arg3.list2:
+            list5.append(candidate ++ program)
+
+    oldList = []
+    //  1st arg
+    for program in arg1.list2:
+        oldList.append(id ++ program)
+    currList = []
+
+    for arg in list:
+        for candidate  in  oldList:
+            for program in arg.list2:
+                currList.append(candidate ++ program)
+        oldList = currList
+        currList = []
+
+
+
+    for arg in list
+        for elem in arg.list2
+            curr ++ elem
+
+
+            result = (list2 ++ result)
+
+
+goal:  (id, schema)
+    
+
+
+
+    call getUnified for each arg
+    for each argument, get the list of ground  componenets w/ depth -1
