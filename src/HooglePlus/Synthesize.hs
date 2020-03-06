@@ -73,12 +73,12 @@ envToGoal env queryStr = do
 synthesize :: SearchParams -> Goal -> Chan Message -> IO ()
 synthesize searchParams goal messageChan = do
     let env''' = gEnvironment goal
-    putStrLn $ "environment''': " ++ show (env''' ^. symbols)
+    -- putStrLn $ "environment''': " ++ show (env''' ^. symbols)
 
     let (env'', monospec) = updateEnvWithBoundTyVars (gSpec goal) env'''
     -- let (env', destinationType) = updateEnvWithSpecArgs monospec env'''
     
-    putStrLn $ "environment'': " ++ show (env'' ^. symbols)
+    -- putStrLn $ "environment'': " ++ show (env'' ^. symbols)
 
     let (env', destinationType) = updateEnvWithSpecArgs monospec env''
     let useHO = _useHO searchParams
@@ -99,7 +99,7 @@ synthesize searchParams goal messageChan = do
     putStrLn $ "goal:" ++ show goal
     putStrLn $ "destinationType:" ++ show destinationType
 
-    -- putStrLn $ "environment: " ++ show (env ^. symbols)
+    putStrLn $ "environment: " ++ show (env ^. symbols)
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
