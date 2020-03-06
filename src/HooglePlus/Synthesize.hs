@@ -103,7 +103,7 @@ synthesize searchParams goal messageChan = do
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
-    result <- dfsTop env messageChan 2 (shape destinationType)
+    result <- dfsTop env messageChan 3 (shape destinationType)
 
     -- result <- dfs env messageChan 3 ("start", shape monospec)
 
