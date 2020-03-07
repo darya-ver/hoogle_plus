@@ -187,7 +187,7 @@ getUnifiedFunctions envv messageChan xs goalType = do
       st <- get
       if (checkResult) 
         then do
-          list $ putStrLn $ "schema': " ++ show schema'
+          lift $ putStrLn $ "schema': " ++ show schema'
           modify $ set components ((id, schema') : st ^. components) 
         else return ()
       
