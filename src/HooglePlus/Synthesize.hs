@@ -99,11 +99,11 @@ synthesize searchParams goal messageChan = do
     putStrLn $ "goal:" ++ show goal
     putStrLn $ "destinationType:" ++ show destinationType
 
-    putStrLn $ "environment: " ++ show (env ^. symbols)
+    -- putStrLn $ "environment: " ++ show (env ^. symbols)
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
-    result <- dfsTop env messageChan 1 (shape destinationType)
+    result <- dfsTop env messageChan 2 (shape destinationType)
 
     let filtered = filter (\x -> (isInfixOf "one" x) && (isInfixOf "zero" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))) result
     putStrLn $ unlines filtered 
