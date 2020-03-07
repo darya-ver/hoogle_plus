@@ -164,9 +164,9 @@ getUnifiedFunctions envv messageChan xs goalType = do
     helper _ _ [] _ = return ()
     helper envv messageChan ( v@(id, schema) : ys) goalType = do
       
-      lift $ putStrLn $ "\ngoalType: " ++ show goalType
-      lift $ putStrLn $ "id: " ++ id
-      lift $ putStrLn $ "schema: " ++ show schema
+      -- lift $ putStrLn $ "\ngoalType: " ++ show goalType
+      -- lift $ putStrLn $ "id: " ++ id
+      -- lift $ putStrLn $ "schema: " ++ show schema
       
 
       -- lift $ putStrLn "not in there yet: " ++ show goalType
@@ -180,7 +180,7 @@ getUnifiedFunctions envv messageChan xs goalType = do
 
       let sub =  st' ^. typeAssignment
       let checkResult = st' ^. isChecked
-      lift $ putStrLn $ "checkResult: " ++ show checkResult
+      -- lift $ putStrLn $ "checkResult: " ++ show checkResult
 
       let schema' = stypeSubstitute sub (shape $ toMonotype schema)
 
