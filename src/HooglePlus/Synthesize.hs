@@ -129,8 +129,8 @@ dfsTop env messageChan depth hole = flip evalStateT emptyComps $ do
   -- lift $ putStrLn $ "argUnifiedFuncs:" ++ show argUnifiedFuncs
   -- recurse, solving each unified component as a goal, solution is a list of programs
   -- the first element of list2 is the list of first argument solutions
-  -- fmap concat $ mapM (dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
-  return  []
+  fmap concat $ mapM (dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
+  -- return  []
   
   
   -- (flip evalStateT) Map.empty (dfs env messageChan depth goal)
