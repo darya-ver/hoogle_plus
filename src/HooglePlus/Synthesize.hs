@@ -164,8 +164,9 @@ getUnifiedFunctions envv messageChan xs goalType = do
     helper _ _ [] _ = return ()
     helper envv messageChan ( v@(id, schema) : ys) goalType = do
       
-      lift $ putStrLn $ "goalType: " ++ show goalType
+      lift $ putStrLn $ "\ngoalType: " ++ show goalType
       lift $ putStrLn $ "id: " ++ id
+      lift $ putstrLn $ "schema: " ++ show schema
       
 
       -- lift $ putStrLn "not in there yet: " ++ show goalType
