@@ -109,7 +109,7 @@ synthesize searchParams goal messageChan = do
 
     let filtered = filter (\x -> (isInfixOf "one" x) && (isInfixOf "zero" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))) result
     putStrLn $ "wow we are here2"
-    let filtered2 = filter (\x -> (isPrefixOf "(GHC.List.!!" x) || (isPrefixOf "(Data.Maybe.Just" x) || (isPrefixOf "(GHC.List.last" x)) filtered 
+    let filtered2 = filter (\x -> (Data.List.isPrefixOf "(GHC.List.!!" x) || (Data.List.isPrefixOf "(Data.Maybe.Just" x) || (Data.List.isPrefixOf "(GHC.List.last" x) ) filtered 
     putStrLn $ "wow we are here3"
     putStrLn $ "length: " ++ show (length filtered2)
     putStrLn $ unlines filtered2
