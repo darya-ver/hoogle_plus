@@ -125,6 +125,7 @@ dfsTop env messageChan depth hole = flip evalStateT emptyComps $ do
   -- map each hole ?? to a list of component types that unify with the hole
   unifiedFuncs <- getUnifiedFunctions env messageChan components hole :: StateT Comps IO [(Id, SType)]
 
+  lift $ putStrLn $ "unifiedFuns: " ++ show unifiedFuncs
   -- lift $ putStrLn $ "argUnifiedFuncs:" ++ show argUnifiedFuncs
   -- recurse, solving each unified component as a goal, solution is a list of programs
   -- the first element of list2 is the list of first argument solutions
