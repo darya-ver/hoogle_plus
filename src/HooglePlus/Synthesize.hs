@@ -108,12 +108,12 @@ synthesize searchParams goal messageChan = do
     putStrLn $ "wow we are here"
 
     let filtered = filter (\x -> (isInfixOf "one" x) && (isInfixOf "zero" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))) result
-    putStrLn $ "wow we are here2"
-    let filtered2 = filter (\x -> (isInfixOf "(GHC.List.!!" x) || (isInfixOf "(Data.Maybe.Just" x) || (isInfixOf "(GHC.List.last" x) ) filtered 
-    putStrLn $ "wow we are here3"
-    putStrLn $ "length: " ++ show (length filtered2)
-    putStrLn $ unlines filtered2
-    putStrLn $ "here4"
+    -- putStrLn $ "wow we are here2"
+    -- let filtered2 = filter (\x -> (isInfixOf "(GHC.List.!!" x) || (isInfixOf "(Data.Maybe.Just" x) || (isInfixOf "(GHC.List.last" x) ) filtered 
+    -- putStrLn $ "wow we are here3"
+    -- putStrLn $ "length: " ++ show (length filtered2)
+    putStrLn $ unlines filtered
+    -- putStrLn $ "here4"
     -- result <- dfs env messageChan 3 ("start", shape monospec)
 
     -- print the result
