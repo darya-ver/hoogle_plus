@@ -103,7 +103,7 @@ synthesize searchParams goal messageChan = do
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
-    result <- dfsTop env messageChan 3 (shape destinationType)
+    result <- dfsTop env messageChan 2 (shape destinationType)
 
     let filtered = filter (\x -> (isInfixOf "one" x) && (isInfixOf "zero" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))) result
     putStrLn $ unlines filtered 
