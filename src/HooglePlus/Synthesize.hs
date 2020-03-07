@@ -185,7 +185,11 @@ getUnifiedFunctions envv messageChan xs goalType = do
       let schema' = stypeSubstitute sub (shape $ toMonotype schema)
 
       st <- get
-      if (checkResult) then modify $ set components ((id, schema') : st ^. components) else return ()
+      if (checkResult) 
+        then do
+          list $ putStrLn $ "schema': " ++ show schema'
+          modify $ set components ((id, schema') : st ^. components) 
+        else return ()
       
       helper envv messageChan ys goalType
 
