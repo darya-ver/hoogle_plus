@@ -111,7 +111,7 @@ synthesize searchParams goal messageChan = do
     putStrLn $ "wow we are here2"
     let filtered2 = filter (\x -> (isPrefixOf "(GHC.List.!!" x) || (isPrefixOf "(Data.Maybe.Just" x) || (isPrefixOf "(GHC.List.last" x)) filtered 
     putStrLn $ "wow we are here3"
-    putStrLn $ "length: " ++ len filtered2    
+    putStrLn $ "length: " ++ size filtered2    
     putStrLn $ unlines filtered2
     putStrLn $ "here4"
     -- result <- dfs env messageChan 3 ("start", shape monospec)
