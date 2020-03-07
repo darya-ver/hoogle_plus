@@ -166,7 +166,7 @@ getUnifiedFunctions envv messageChan xs goalType = do
       
       lift $ putStrLn $ "\ngoalType: " ++ show goalType
       lift $ putStrLn $ "id: " ++ id
-      lift $ putstrLn $ "schema: " ++ show schema
+      lift $ putStrLn $ "schema: " ++ show schema
       
 
       -- lift $ putStrLn "not in there yet: " ++ show goalType
