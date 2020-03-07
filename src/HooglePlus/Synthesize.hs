@@ -110,6 +110,7 @@ synthesize searchParams goal messageChan = do
     let filtered = filter (\x -> (isInfixOf "one" x) && (isInfixOf "zero" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))) result
     putStrLn $ "wow we are here2"
     let filtered2 = filter (\x -> (isPrefixOf "(GHC.List.!!" x) || (isPrefixOf "(Data.Maybe.Just" x) || (isPrefixOf "(GHC.List.last" x)) filtered 
+    putStrLn $ "wow we are here3"    
     putStrLn $ unlines filtered2
     -- result <- dfs env messageChan 3 ("start", shape monospec)
 
