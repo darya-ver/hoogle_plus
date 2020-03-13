@@ -1,0 +1,2 @@
+"name"	"query"	"solutions"
+"applyNtimes"	"(a->a) -> a -> Int -> a"	"arg0 (GHC.List.head (GHC.List.replicate arg3 arg2))"

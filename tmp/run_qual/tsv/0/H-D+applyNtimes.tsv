@@ -1,0 +1,3 @@
+"name"	"query"	"solutions"
+"applyNtimes"	"(a->a) -> a -> Int -> a"	"arg0 (Data.Either.fromLeft arg2 (Data.Either.Right arg3))
+arg0 (GHC.List.head (GHC.List.replicate arg3 arg2))"

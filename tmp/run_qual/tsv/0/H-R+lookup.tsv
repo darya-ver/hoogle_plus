@@ -1,0 +1,4 @@
+"name"	"query"	"solutions"
+"lookup"	"Eq a => [(a,b)] -> a -> b"	"Data.Tuple.snd (GHC.List.head arg0)
+Data.Tuple.snd (GHC.List.last arg0)
+Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)"

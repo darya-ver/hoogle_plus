@@ -1,0 +1,3 @@
+"name"	"query"	"Solution"	"encodingTime"	"constructionTime"	"solverTime"	"codeFormerTime"	"refineTime"	"typeCheckerTime"	"totalTime"	"iterations"	"pathLength"	"numOfTransitions"	"numOfPlaces"	"duplicateSymbols"
+"lookup"	"Eq a => [(a,b)] -> a -> b"	"SOLUTION: Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)
+"	"5.4844273e-2"	"9.4400116e-2"	"0.30224882499999994"	"1.6669139999999998e-3"	"0.379195116"	"8.424779999999999e-4"	"0.835497558"	"4"	"2"	"463"	"fromList [(0"	"['(101']"

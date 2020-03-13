@@ -1,0 +1,2 @@
+"name"	"query"	"Solution"	"encodingTime"	"constructionTime"	"solverTime"	"codeFormerTime"	"refineTime"	"typeCheckerTime"	"totalTime"	"iterations"	"pathLength"	"numOfTransitions"	"numOfPlaces"	"duplicateSymbols"
+"fromFirstMaybes"	"a -> [Maybe a] -> a"	"No Solution"	"3.472471e-3"	"5.5891355e-2"	"0.130887491"	"1.0210700000000002e-3"	"0.0"	"1.9466904e-2"	"0.21289225"	"0"	"2"	"49"	"fromList [(1"	"['(49']"

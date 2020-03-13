@@ -1,0 +1,18 @@
+\begin{tabular}{rlllll}
+\hline
+   N & Name            & Query                     & Solutions-H                                                                                                     & Solutions-HD                                                                                                                                     & Solutions-HR                                                                                                            \\
+\hline
+   1 & fromFirstMaybes & a -\ensuremath{>} [Maybe a] -\ensuremath{>} a       & Data.Maybe.fromMaybe arg0 (GHC.List.head arg1)
+Data.Maybe.fromMaybe arg0 (GHC.List.last arg1)                   & Data.Either.fromRight arg0 (Data.Either.Left arg1)
+Data.Maybe.fromMaybe arg0 (GHC.List.head arg1)
+Data.Maybe.fromMaybe arg0 (GHC.List.last arg1) &                                                                                                                         \\
+   2 & applyNtimes     & (a-\ensuremath{>}a) -\ensuremath{>} a -\ensuremath{>} Int -\ensuremath{>} a   & arg0 (GHC.List.head (GHC.List.replicate arg3 arg2))                                                             & arg0 (Data.Either.fromLeft arg2 (Data.Either.Right arg3))
+arg0 (GHC.List.head (GHC.List.replicate arg3 arg2))                                    & arg0 arg2
+arg0 (arg0 arg2)                                                                                              \\
+   3 & lookup          & Eq a =\ensuremath{>} [(a,b)] -\ensuremath{>} a -\ensuremath{>} b & Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)
+Data.Maybe.fromJust (GHC.List.lookup arg1 (GHC.List.init arg0)) & Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)
+Data.Maybe.fromJust (GHC.List.lookup arg1 (GHC.List.tail arg0))                                  & Data.Tuple.snd (GHC.List.head arg0)
+Data.Tuple.snd (GHC.List.last arg0)
+Data.Maybe.fromJust (GHC.List.lookup arg1 arg0) \\
+\hline
+\end{tabular}

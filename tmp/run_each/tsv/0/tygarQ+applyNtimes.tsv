@@ -1,0 +1,3 @@
+"name"	"query"	"Solution"	"encodingTime"	"constructionTime"	"solverTime"	"codeFormerTime"	"refineTime"	"typeCheckerTime"	"totalTime"	"iterations"	"pathLength"	"numOfTransitions"	"numOfPlaces"	"duplicateSymbols"
+"applyNtimes"	"(a->a) -> a -> Int -> a"	"SOLUTION: arg0 ((GHC.List.!!) (GHC.List.repeat arg2) arg3)
+"	"2.467456e-2"	"6.6122297e-2"	"0.161576059"	"2.81802e-4"	"0.105484568"	"8.094770000000001e-4"	"0.35928124"	"2"	"3"	"124"	"fromList [(0"	"['(68']"

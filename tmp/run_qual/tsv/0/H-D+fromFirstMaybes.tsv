@@ -1,0 +1,4 @@
+"name"	"query"	"solutions"
+"fromFirstMaybes"	"a -> [Maybe a] -> a"	"Data.Either.fromRight arg0 (Data.Either.Left arg1)
+Data.Maybe.fromMaybe arg0 (GHC.List.head arg1)
+Data.Maybe.fromMaybe arg0 (GHC.List.last arg1)"
