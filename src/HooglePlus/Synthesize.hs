@@ -231,17 +231,20 @@ dfs env messageChan depth (id, schema) = do
   -- then return ["isground at depth='" ++ show depth ++ "'" ++ id]
   then return ["(" ++ id ++ ")"]
   else do -- return []
-    -- collect all the argument types (the holes ?? we need to fill)
-    let args = allArgTypes schema
 
     st <- get
     -- add 1 to "number of times dfs called" counter
     modify $ set counter (1 + (st ^. counter))
+
+    when (st ^. counter `mod` 1000 == 0) (lift $ print (st ^. counter))
+
     if (st ^. counter > 1000000) then
       -- once we hit 1000000 just say the solution is "stop"
       return ["stop"]
     else do
 
+      -- collect all the argument types (the holes ?? we need to fill)
+      let args = allArgTypes schema
       -- lift $ putStrLn $ "schema: " ++ show schema
       -- lift $ putStrLn $ "args: " ++ show args
       -- -- collect all the component types (which we might use to fill the holes)
