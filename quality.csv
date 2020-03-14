@@ -1,13 +1,230 @@
 N,Name,Query,Solutions-H,Solutions-HD,Solutions-HR
-1,fromFirstMaybes,a -> [Maybe a] -> a,"Data.Maybe.fromMaybe arg0 (GHC.List.head arg1)
+1,firstJust,a -> [Maybe a] -> a,"Data.Maybe.fromMaybe arg0 (GHC.List.head arg1)
 Data.Maybe.fromMaybe arg0 (GHC.List.last arg1)","Data.Either.fromRight arg0 (Data.Either.Left arg1)
 Data.Maybe.fromMaybe arg0 (GHC.List.head arg1)
 Data.Maybe.fromMaybe arg0 (GHC.List.last arg1)",
-2,applyNtimes,(a->a) -> a -> Int -> a,arg0 (GHC.List.head (GHC.List.replicate arg3 arg2)),"arg0 (Data.Either.fromLeft arg2 (Data.Either.Right arg3))
+2,both,"(a -> b) -> (a, a) -> (b, b)","(,) (arg0 (fst arg2)) (arg0 (snd arg2))
+Data.Tuple.swap ((,) (arg0 (fst arg2)) (arg0 (snd arg2)))","(,) (arg0 (fst arg2)) (arg0 (snd arg2))
+(,) (arg0 (Data.Tuple.snd arg2)) (arg0 (Data.Tuple.snd arg2))
+(,) (arg0 (Data.Tuple.fst arg2)) (arg0 (Data.Tuple.fst arg2))
+Data.Tuple.swap ((,) (arg0 (fst arg2)) (arg0 (snd arg2)))",
+3,rights,[Either a b] -> Either a [b],"Data.Either.Right (Data.Either.rights arg0)
+Data.Either.Right (Data.Either.rights (GHC.List.init arg0))
+Data.Either.Right (Data.Either.rights (GHC.List.tail arg0))","Data.Either.Right (Data.Either.rights arg0)
+Data.Either.Right (Data.Either.rights (GHC.List.init arg0))
+Data.Either.Right (Data.Either.rights (GHC.List.tail arg0))","Data.Either.Right (Data.Either.rights arg0)
+Data.Either.Right []"
+4,app3,(a -> b -> c -> d) -> a -> c -> b -> d,arg0 arg4 arg6 arg5,arg0 arg4 arg6 arg5,arg0 arg4 arg6 arg5
+5,multiApp,(a -> b -> c) -> (a -> b) -> a -> c,arg0 arg5 (arg3 arg5),arg0 arg5 (arg3 arg5),arg0 arg5 (arg3 arg5)
+6,resolveEither,Either a b -> (a->b) -> b,"Data.Either.either arg1 Data.Function.id arg0
+Data.Either.fromRight (arg1 (Data.Maybe.fromJust Data.Maybe.Nothing)) arg0","Data.Either.either arg1 Data.Function.id arg0
+Data.Either.either arg1 (GHC.List.head []) arg0
+Data.Either.fromRight (arg1 (Data.Maybe.fromJust Data.Maybe.Nothing)) arg0",Data.Either.either arg1 Data.Function.id arg0
+7,splitStr,String -> Char -> [String],"GHC.List.repeat (Text.Show.showChar arg1 arg0)
+GHC.List.repeat (GHC.List.replicate (GHC.List.length arg0) arg1)
+(:) (GHC.List.repeat arg1) (GHC.List.repeat arg0)","GHC.List.repeat (Text.Show.showChar arg1 arg0)
+GHC.List.repeat (GHC.List.replicate (GHC.List.length arg0) arg1)
+(:) (GHC.List.repeat arg1) (GHC.List.repeat arg0)","GHC.List.repeat arg0
+[]"
+8,indexesOf,"([(a,Int)] -> [(a,Int)]) -> [a] -> [Int] -> [Int]",,,Data.Either.lefts []
+9,applyPair,"(a -> b, a) -> b",Data.Tuple.uncurry Data.Function.id arg0,"Data.Tuple.uncurry Data.Function.id arg0
+Data.Tuple.uncurry (GHC.List.head []) arg0","Data.Tuple.uncurry Data.Function.id arg0
+Data.Maybe.fromJust Data.Maybe.Nothing
+GHC.List.head []
+GHC.List.last []"
+10,map,(a->b)->[a]->[b],"GHC.List.map arg0 arg2
+GHC.List.repeat (arg0 (GHC.List.last arg2))
+GHC.List.map arg0 (GHC.List.init arg2)
+GHC.List.map arg0 (GHC.List.tail arg2)
+GHC.List.repeat (arg0 (GHC.List.head arg2))","GHC.List.map arg0 arg2
+GHC.List.repeat (arg0 (GHC.List.last arg2))
+GHC.List.map arg0 (GHC.List.init arg2)
+GHC.List.map arg0 (GHC.List.tail arg2)
+GHC.List.repeat (arg0 (GHC.List.head arg2))","GHC.List.map arg0 arg2
+Data.Either.lefts []"
+11,eitherTriple,Either a b -> Either a b -> Either a b,,"Data.Either.fromLeft arg0 (Data.Either.Left arg1)
+Data.Either.fromRight arg0 (Data.Either.Left arg1)",Data.Either.fromLeft arg0 (Data.Either.Right arg0)
+12,firstRight,[Either a b] -> Either a b,"GHC.List.head arg0
+GHC.List.last arg0
+GHC.List.head (GHC.List.init arg0)
+GHC.List.last (GHC.List.init arg0)
+GHC.List.head (GHC.List.tail arg0)","GHC.List.head arg0
+GHC.List.last arg0
+GHC.List.head (GHC.List.init arg0)
+GHC.List.last (GHC.List.init arg0)
+GHC.List.head (GHC.List.tail arg0)","GHC.List.head arg0
+GHC.List.last arg0
+GHC.List.head (GHC.List.init arg0)
+GHC.List.last (GHC.List.init arg0)
+GHC.List.head (GHC.List.tail arg0)"
+13,cartProduct,"[a] -> [b] -> [[(a,b)]]","GHC.List.repeat (GHC.List.zip arg0 arg1)
+Data.Maybe.maybeToList (Data.Maybe.Just (GHC.List.zip arg0 arg1))","GHC.List.repeat (GHC.List.zip arg0 arg1)
+Data.Maybe.maybeToList (Data.Maybe.Just (GHC.List.zip arg0 arg1))","[]
+GHC.List.repeat (GHC.List.zip arg0 arg1)"
+14,maybe,Maybe a -> a -> Maybe a,Data.Maybe.Just (Data.Maybe.fromMaybe arg1 arg0),"Data.Maybe.Just (Data.Maybe.fromMaybe arg1 arg0)
+Data.Either.fromRight arg0 (Data.Either.Left arg1)","Data.Maybe.Just arg1
+Data.Maybe.Nothing"
+15,mbElem,Eq a => a -> [a] -> Maybe a,,,"Data.Maybe.Just arg0
+Data.Maybe.listToMaybe arg1
+Data.Maybe.Nothing
+Data.Maybe.listToMaybe (GHC.List.init arg1)
+Data.Maybe.listToMaybe (GHC.List.tail arg1)"
+16,mergeEither,Either a (Either a b) -> Either a b,Data.Either.fromRight (Data.Maybe.fromJust Data.Maybe.Nothing) arg0,Data.Either.fromRight (Data.Maybe.fromJust Data.Maybe.Nothing) arg0,Data.Either.fromRight (GHC.List.head []) arg0
+17,flatten,[[[a]]] -> [a],"GHC.List.head (GHC.List.head arg0)
+GHC.List.last (GHC.List.head arg0)
+GHC.List.concat (GHC.List.head arg0)
+GHC.List.head (GHC.List.last arg0)
+GHC.List.last (GHC.List.last arg0)","GHC.List.head (GHC.List.head arg0)
+GHC.List.last (GHC.List.head arg0)
+GHC.List.concat (GHC.List.head arg0)
+GHC.List.head (GHC.List.last arg0)
+GHC.List.last (GHC.List.last arg0)","[]
+GHC.List.concat (GHC.List.concat arg0)
+GHC.List.head (GHC.List.concat arg0)
+GHC.List.last (GHC.List.concat arg0)
+GHC.List.concat (GHC.List.head arg0)"
+18,appBoth,"(a -> b) -> (a -> c) -> a -> (b, c)","(,) (arg0 arg4) (arg2 arg4)",,"(,) (arg0 arg4) (arg2 arg4)"
+19,splitAtFirst,"a -> [a] -> ([a], [a])","(,) (GHC.List.repeat arg0) arg1
+Data.Tuple.swap ((,) (GHC.List.repeat arg0) arg1)
+GHC.List.splitAt (GHC.List.length arg1) (GHC.List.repeat arg0)
+(,) ((:) arg0 arg1) ((:) arg0 arg1)
+(,) (GHC.List.init arg1) (GHC.List.repeat arg0)","(,) (GHC.List.repeat arg0) arg1
+Data.Tuple.swap ((,) (GHC.List.repeat arg0) arg1)
+GHC.List.splitAt (GHC.List.length arg1) (GHC.List.repeat arg0)
+(,) ((:) arg0 arg1) ((:) arg0 arg1)
+(,) (GHC.List.init arg1) (GHC.List.repeat arg0)","(,) arg1 arg1
+(,) ((:) arg0 arg1) ((:) arg0 arg1)
+(,) (GHC.List.repeat arg0) (GHC.List.repeat arg0)"
+20,areEq,Eq a => a -> a -> Maybe a,Data.Maybe.fromMaybe (Data.Maybe.Just arg0) (GHC.List.lookup arg1 []),"Data.Maybe.Just (Data.Either.fromLeft arg0 (Data.Either.Right ((,) arg1)))","Data.Maybe.Just arg0
+Data.Maybe.Nothing"
+21,firstKey,"[(a,b)] -> a","Data.Tuple.fst (GHC.List.last arg0)
+Data.Tuple.fst (GHC.List.head arg0)","Data.Tuple.fst (GHC.List.last arg0)
+Data.Tuple.fst (GHC.List.head arg0)","Data.Tuple.fst (GHC.List.head arg0)
+Data.Tuple.fst (GHC.List.last arg0)"
+22,applyNtimes,(a->a) -> a -> Int -> a,arg0 (GHC.List.head (GHC.List.replicate arg3 arg2)),"arg0 (Data.Either.fromLeft arg2 (Data.Either.Right arg3))
 arg0 (GHC.List.head (GHC.List.replicate arg3 arg2))","arg0 arg2
 arg0 (arg0 arg2)"
-3,lookup,"Eq a => [(a,b)] -> a -> b","Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)
-Data.Maybe.fromJust (GHC.List.lookup arg1 (GHC.List.init arg0))","Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)
+23,head-rest,"[a] -> (a, [a])","Data.Maybe.fromJust (GHC.List.uncons arg0)
+(,) (GHC.List.last arg0) arg0
+(,) (GHC.List.head arg0) arg0","Data.Maybe.fromJust (GHC.List.uncons arg0)
+(,) (GHC.List.last arg0) arg0
+(,) (GHC.List.head arg0) arg0
+(,) (GHC.List.last arg0) []","Data.Maybe.fromJust (GHC.List.uncons arg0)
+(,) (GHC.List.head arg0) arg0
+(,) (GHC.List.last arg0) arg0"
+24,mbToEither,Maybe a -> b -> Either a b,,"Data.Either.Right (Data.Tuple.snd ((,) arg0 arg1))","Data.Either.Right arg1
+Data.Either.Left (Data.Maybe.fromJust arg0)"
+25,zipWithResult,"(a->b)->[a]->[(a,b)]","GHC.List.zip arg2 (GHC.List.map arg0 arg2)
+GHC.List.zip arg2 (GHC.List.map arg0 [])","GHC.List.zip arg2 (GHC.List.map arg0 arg2)
+GHC.List.zip arg2 (GHC.List.map arg0 [])",Data.Either.lefts []
+26,pipe,[(a -> a)] -> (a -> a),GHC.List.foldr Data.Function.id arg1 arg0,"Data.Either.fromRight arg1 (Data.Either.Left arg0)
+GHC.List.foldr Data.Function.id arg1 arg0",GHC.List.foldr Data.Function.id arg1 arg0
+27,intToBS,Int64 -> ByteString,,,
+28,mbAppFirst,b -> (a -> b) -> [a] -> b,"Data.Maybe.maybe arg0 arg1 (Data.Maybe.listToMaybe arg3)
+Data.Maybe.maybe arg0 arg1 (Data.Maybe.listToMaybe (GHC.List.init arg3))
+Data.Maybe.maybe arg0 arg1 (Data.Maybe.listToMaybe (GHC.List.tail arg3))","Data.Maybe.maybe arg0 arg1 (Data.Maybe.listToMaybe arg3)
+Data.Maybe.fromMaybe (arg1 (GHC.List.head arg3)) (Data.Maybe.Just arg0)
+Data.Maybe.maybe arg0 arg1 (Data.Maybe.listToMaybe (GHC.List.init arg3))
+Data.Maybe.maybe arg0 arg1 (Data.Maybe.listToMaybe (GHC.List.tail arg3))","arg1 (GHC.List.head arg3)
+arg1 (GHC.List.last arg3)
+Data.Maybe.maybe arg0 arg1 Data.Maybe.Nothing"
+29,containsEdge,"[Int] -> (Int,Int) -> Bool","GHC.List.null (GHC.List.repeat ((,) arg1 arg0))","Data.Either.fromLeft (GHC.List.null arg0) (Data.Either.Right arg1)
+GHC.List.null (GHC.List.repeat ((,) arg1 arg0))
+GHC.List.null (GHC.List.replicate (Data.Tuple.fst arg1) arg0)","Data.Bool.False
+Data.Bool.True"
+30,repl-funcs,(a->b)->Int->[a->b],"GHC.List.replicate arg2 arg0
+GHC.List.init (GHC.List.replicate arg2 arg0)","GHC.List.replicate arg2 arg0
+GHC.List.init (GHC.List.replicate arg2 arg0)",GHC.List.replicate arg2 arg0
+31,lookup,"Eq a => [(a,b)] -> a -> b","Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)
+Data.Maybe.fromJust (GHC.List.lookup arg1 (GHC.List.init arg0))
+Data.Maybe.fromJust (GHC.List.lookup arg1 (GHC.List.tail arg0))","Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)
 Data.Maybe.fromJust (GHC.List.lookup arg1 (GHC.List.tail arg0))","Data.Tuple.snd (GHC.List.head arg0)
 Data.Tuple.snd (GHC.List.last arg0)
 Data.Maybe.fromJust (GHC.List.lookup arg1 arg0)"
+32,firstMaybe,[Maybe a] -> a,"Data.Maybe.fromJust (GHC.List.head arg0)
+Data.Maybe.fromJust (GHC.List.last arg0)
+GHC.List.head (Data.Maybe.catMaybes arg0)
+GHC.List.last (Data.Maybe.catMaybes arg0)","Data.Maybe.fromJust (GHC.List.head arg0)
+Data.Maybe.fromJust (GHC.List.last arg0)
+GHC.List.head (Data.Maybe.catMaybes arg0)
+GHC.List.last (Data.Maybe.catMaybes arg0)","Data.Maybe.fromJust (GHC.List.head arg0)
+Data.Maybe.fromJust (GHC.List.last arg0)
+GHC.List.head (Data.Maybe.catMaybes arg0)
+GHC.List.last (Data.Maybe.catMaybes arg0)"
+33,pred-match,[a] -> (a -> Bool) -> Int,"GHC.List.length (GHC.List.map arg1 arg0)
+GHC.List.length (GHC.List.dropWhile arg1 arg0)
+GHC.List.length (GHC.List.filter arg1 arg0)
+GHC.List.length (GHC.List.takeWhile arg1 arg0)","GHC.List.length (GHC.List.map arg1 arg0)
+GHC.List.length (GHC.List.dropWhile arg1 arg0)
+GHC.List.length (GHC.List.filter arg1 arg0)
+GHC.List.length (GHC.List.takeWhile arg1 arg0)","GHC.List.length (GHC.List.dropWhile arg1 arg0)
+GHC.List.length (GHC.List.filter arg1 arg0)
+GHC.List.length (GHC.List.takeWhile arg1 arg0)
+GHC.List.length (GHC.List.map arg1 arg0)"
+34,singleList,Int -> [Int],GHC.List.repeat arg0,GHC.List.repeat arg0,"GHC.List.repeat arg0
+GHC.List.replicate arg0 arg0
+[]"
+35,2partApp,(a->b)->(b->c)->[a]->[c],"GHC.List.map arg2 (GHC.List.map arg0 arg4)
+GHC.List.repeat (arg2 (arg0 (GHC.List.last arg4)))
+GHC.List.repeat (arg2 (arg0 (GHC.List.head arg4)))","GHC.List.map arg2 (GHC.List.map arg0 arg4)
+GHC.List.repeat (arg2 (arg0 (GHC.List.last arg4)))
+GHC.List.repeat (arg2 (arg0 (GHC.List.head arg4)))",GHC.List.drop (GHC.List.length arg4) []
+36,takeNdropM,"Int -> Int -> [a] -> ([a], [a])","GHC.List.splitAt arg0 (GHC.List.drop arg1 arg2)
+GHC.List.splitAt arg0 (GHC.List.take arg1 arg2)
+GHC.List.splitAt (GHC.List.head (GHC.List.replicate arg0 arg1)) arg2","GHC.List.splitAt arg0 (GHC.List.drop arg1 arg2)
+GHC.List.splitAt arg0 (GHC.List.take arg1 arg2)
+GHC.List.splitAt (Data.Tuple.fst ((,) arg0 arg1)) arg2
+GHC.List.splitAt (GHC.List.head (GHC.List.replicate arg0 arg1)) arg2","(,) arg2 arg2
+GHC.List.splitAt arg0 arg2
+(,) (GHC.List.init arg2) (GHC.List.init arg2)
+(,) (GHC.List.tail arg2) (GHC.List.tail arg2)"
+37,multiAppPair,"(a -> b, a -> c) -> a -> (b, c)",Data.Tuple.curry (GHC.List.last []) arg1 arg0,"Data.Tuple.curry (Data.Maybe.fromJust Data.Maybe.Nothing) arg1 arg0
+Data.Tuple.curry (GHC.List.head []) arg1 arg0
+Data.Tuple.curry (GHC.List.last []) arg1 arg0
+Data.Tuple.curry (Data.Maybe.fromJust Data.Maybe.Nothing) arg0 arg1","Data.Maybe.fromJust Data.Maybe.Nothing
+GHC.List.head []
+GHC.List.last []
+GHC.List.head (Data.Maybe.fromJust Data.Maybe.Nothing)
+GHC.List.last (Data.Maybe.fromJust Data.Maybe.Nothing)"
+38,test,Bool -> a -> Maybe a,"Data.Bool.bool (Data.Maybe.Just arg1) Data.Maybe.Nothing arg0
+Data.Bool.bool Data.Maybe.Nothing (Data.Maybe.Just arg1) arg0","Data.Bool.bool (Data.Maybe.Just arg1) Data.Maybe.Nothing arg0
+Data.Bool.bool Data.Maybe.Nothing (Data.Maybe.Just arg1) arg0","Data.Maybe.Just arg1
+Data.Maybe.Nothing"
+39,appendN,Int -> [a] -> [a],"GHC.List.drop arg0 arg1
+GHC.List.take arg0 arg1
+GHC.List.drop arg0 (GHC.List.init arg1)
+GHC.List.take arg0 (GHC.List.init arg1)
+GHC.List.drop arg0 (GHC.List.tail arg1)","GHC.List.drop arg0 arg1
+GHC.List.take arg0 arg1
+GHC.List.drop arg0 (GHC.List.init arg1)
+GHC.List.take arg0 (GHC.List.init arg1)
+GHC.List.drop arg0 (GHC.List.tail arg1)","GHC.List.init arg1
+GHC.List.tail arg1
+GHC.List.drop arg0 arg1
+GHC.List.take arg0 arg1"
+40,hoogle01,(a -> b) -> [a] -> b,"arg0 (GHC.List.head arg2)
+arg0 (GHC.List.last arg2)","arg0 (GHC.List.head arg2)
+arg0 (GHC.List.last arg2)","arg0 (GHC.List.head arg2)
+arg0 (GHC.List.last arg2)"
+41,firstMatch,[a] -> (a -> Bool) -> a,"GHC.List.head (GHC.List.dropWhile arg1 arg0)
+GHC.List.last (GHC.List.dropWhile arg1 arg0)
+GHC.List.head (GHC.List.filter arg1 arg0)
+GHC.List.last (GHC.List.filter arg1 arg0)
+GHC.List.head (GHC.List.takeWhile arg1 arg0)","GHC.List.head (GHC.List.dropWhile arg1 arg0)
+GHC.List.last (GHC.List.dropWhile arg1 arg0)
+GHC.List.head (GHC.List.filter arg1 arg0)
+GHC.List.last (GHC.List.filter arg1 arg0)
+GHC.List.head (GHC.List.takeWhile arg1 arg0)","GHC.List.head (GHC.List.dropWhile arg1 arg0)
+GHC.List.last (GHC.List.dropWhile arg1 arg0)
+GHC.List.head (GHC.List.filter arg1 arg0)
+GHC.List.last (GHC.List.filter arg1 arg0)
+GHC.List.head (GHC.List.takeWhile arg1 arg0)"
+42,head-tail,"[a] -> (a,a)","(,) (GHC.List.last arg0) (GHC.List.last arg0)
+(,) (GHC.List.head arg0) (GHC.List.head arg0)","(,) (GHC.List.last arg0) (GHC.List.last arg0)
+(,) (GHC.List.head arg0) (GHC.List.head arg0)","GHC.List.head (GHC.List.zip arg0 arg0)
+GHC.List.last (GHC.List.zip arg0 arg0)"
+43,mapEither,"(a -> Either b c) -> [a] -> ([b], [c])",Data.Either.partitionEithers (GHC.List.map arg0 arg2),Data.Either.partitionEithers (GHC.List.map arg0 arg2),Data.Either.partitionEithers (GHC.List.map arg0 arg2)
+44,mapMaybes,(a -> Maybe b) -> [a] -> Maybe b,"arg0 (GHC.List.head arg2)
+arg0 (GHC.List.last arg2)","arg0 (GHC.List.head arg2)
+arg0 (GHC.List.last arg2)","arg0 (GHC.List.head arg2)
+arg0 (GHC.List.last arg2)"
