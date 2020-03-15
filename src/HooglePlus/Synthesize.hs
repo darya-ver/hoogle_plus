@@ -112,7 +112,7 @@ synthesize searchParams goal messageChan = do
 
 
 
-    let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+    let f x = ((isInfixOf "one" x) && (isInfixOf "zero" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
     --let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) && (isInfixOf "!!" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
     let filtered = filter f result
     putStrLn $ unlines $ filtered
