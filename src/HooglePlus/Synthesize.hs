@@ -232,13 +232,13 @@ dfs env messageChan depth (id, schema) = do
   then return ["(" ++ id ++ ")"]
   else do -- return []
 
-    st <- get
+    --st <- get
     -- add 1 to "number of times dfs called" counter
-    modify $ set counter (1 + (st ^. counter))
+    --modify $ set counter (1 + (st ^. counter))
 
-    when (st ^. counter `mod` 1000 == 0) (lift $ print (st ^. counter))
+    --when (st ^. counter `mod` 1000 == 0) (lift $ print (st ^. counter))
 
-    if (st ^. counter > 1000000) then
+    if (st ^. counter > 100000000) then
       -- once we hit 1000000 just say the solution is "stop"
       return ["stop"]
     else do
