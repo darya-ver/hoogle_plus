@@ -232,7 +232,7 @@ dfs env messageChan depth (id, schema) = do
   then return ["(" ++ id ++ ")"]
   else do -- return []
 
-    --st <- get
+    st <- get
     -- add 1 to "number of times dfs called" counter
     --modify $ set counter (1 + (st ^. counter))
 
