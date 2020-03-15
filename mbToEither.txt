@@ -1,0 +1,12 @@
+monospec:((Maybe (a)) -> ((b) -> (Either (a) (b))))
+goal:(Data.Function.$)'ho', Data.Function.id'ho' ⊢ goal :: <b> . <a> . ((Maybe (a)) -> ((b) -> (Either (a) (b))))
+goal = (?? :: (_))
+(depth: 3)
+destinationType:(Either (a) (b))
+unifiedFuns: ("Data.Either.Right",(b -> Either (a) (b)))
+("Data.Either.Left",(a -> Either (a) (b)))
+
+(Data.Either.Right (arg1))
+(Data.Either.Left (Data.Maybe.fromJust (arg0)))
+(Data.Either.Left (Data.Maybe.fromJust (Data.Maybe.Nothing)))
+
