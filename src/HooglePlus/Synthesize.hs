@@ -106,16 +106,16 @@ synthesize searchParams goal messageChan = do
     result <- dfsTop env messageChan 3 (shape destinationType)
 
     --putStrLn $ "wow we are here"
-    --putStrLn $ unlines $ result
+    putStrLn $ unlines $ result
     -- putStrLn $ unlines $ take 10 result
 
 
 
 
-    let f x = ((isInfixOf "one" x) && (isInfixOf "zero" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+    --let f x = ((isInfixOf "one" x) && (isInfixOf "zero" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
     --let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) && (isInfixOf "!!" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
-    let filtered = filter f result
-    putStrLn $ unlines $ filtered
+    --let filtered = filter f result
+    --putStrLn $ unlines $ filtered
 
     -- putStrLn $ "Length of filtered: " ++ (show $ length $ filtered)
     -- putStrLn $ "wow we are here2"
