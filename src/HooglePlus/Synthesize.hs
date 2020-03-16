@@ -23,6 +23,7 @@ import Types.TopDown
 
 import Control.Applicative ((<$>))
 import Control.Concurrent.Chan
+--import Control.DeepSeq
 import Control.Exception
 import Control.Lens
 import Control.Monad
@@ -39,6 +40,7 @@ import qualified Data.Set as Set
 import Data.Set (Set)
 import Data.Time.Clock
 import Data.Time.Format
+import System.CPUTime
 import System.Exit
 import Text.Parsec.Indent
 import Text.Parsec.Pos
@@ -103,7 +105,18 @@ synthesize searchParams goal messageChan = do
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
+    
     result <- dfsTop env messageChan 3 (shape destinationType)
+   
+    {-
+    start <- getCPUTime
+    let foo = dfsTop env messageChan 3 (shape destinationType)
+    end <- foo `deepseq` getCPUTime
+    let diff = (fromIntegral (end - start)) / (10^12)
+    printf "Computation time: %0.3f sec\n" (diff :: Double)
+    -}
+
+    -- putStrLn $ show ((end - start))
 
     --putStrLn $ "wow we are here"
     -- putStrLn $ unlines $ result
@@ -112,10 +125,23 @@ synthesize searchParams goal messageChan = do
 
 
 
-    let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+    --let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x) && (isInfixOf "GHC.List.repeat" x)) --  && (isInfixOf "GHC.List.repeat (GHC.List.replicate" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+
+    --let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) 
     --let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) && (isInfixOf "!!" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+
+
+
+    --let f x = ((isInfixOf "arg0" x)) 
+    let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) 
+
     let filtered = filter f result
-    putStrLn $ unlines $ filtered
+    putStrLn $ "omg here"
+    --putStrLn $ "length: " ++ (show (length result))
+    --putStrLn $ unlines $ take 5 filtered
+
+
+
 
     -- putStrLn $ "Length of filtered: " ++ (show $ length $ filtered)
     -- putStrLn $ "wow we are here2"
@@ -146,7 +172,20 @@ dfsTop env messageChan depth hole = flip evalStateT emptyComps $ do
   -- lift $ putStrLn $ "argUnifiedFuncs:" ++ show argUnifiedFuncs
   -- recurse, solving each unified component as a goal, solution is a list of programs
   -- the first element of list2 is the list of first argument solutions
-  fmap concat $ mapM (dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
+  {-let trialThing x = do
+    answer <- dfs env messageChan depth x
+    lift $ putStrLn $ take 1 answer-}
+    
+  fmap concat $ mapM trialThing unifiedFuncs -- :: StateT Comps IO [String]
+  where
+    trialThing x = do 
+                      blah@(answer:xs) <- dfs env messageChan depth x
+                      let f x = ((isInfixOf "arg0" x)) --  && (isInfixOf "arg1" x)) 
+                      let filtered = filter f blah
+
+                      lift $ putStrLn $ head filtered
+                      return blah
+  --fmap concat $ mapM (dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
   -- return []
   
   
@@ -273,6 +312,7 @@ dfs env messageChan depth (id, schema) = do
       -- let formatFn args = "(depth='" ++ show depth ++ "'" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
       let formatFn args = "(" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
       let list4 = map formatFn list3
+      --lift $ putStrLn $ "length of " ++ id ++ ": " ++ (show (length list4))
       return list4
 
   -- print $ typeOf list
