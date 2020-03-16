@@ -75,20 +75,13 @@ envToGoal env queryStr = do
 synthesize :: SearchParams -> Goal -> Chan Message -> IO ()
 synthesize searchParams goal messageChan = do
     let env''' = gEnvironment goal
-    -- putStrLn $ "environment''': " ++ show (env''' ^. symbols)
-
     let (env'', monospec) = updateEnvWithBoundTyVars (gSpec goal) env'''
-    -- let (env', destinationType) = updateEnvWithSpecArgs monospec env'''
-    
-    -- putStrLn $ "environment'': " ++ show (env'' ^. symbols)
-
     let (env', destinationType) = updateEnvWithSpecArgs monospec env''
+
     let useHO = _useHO searchParams
     let rawSyms = env' ^. symbols
     let hoCands = env' ^. hoCandidates
     
-    -- putStrLn $ "environment: " ++ show rawSyms
-
     env <- do
       let syms = Map.filter (not . isHigherOrder . toMonotype) rawSyms
       return $
@@ -101,61 +94,15 @@ synthesize searchParams goal messageChan = do
     putStrLn $ "goal:" ++ show goal
     putStrLn $ "destinationType:" ++ show destinationType
 
-    -- putStrLn $ "environment: " ++ show (env ^. symbols)
-    -- get return type
-    -- get unified functions of the return type
-    -- call DFS on all of those
-    
-    result <- dfsTop env messageChan 3 (shape destinationType)
-   
-    {-
+    -- result <- dfsTop env messageChan 3 (shape destinationType)
+
     start <- getCPUTime
     let foo = dfsTop env messageChan 3 (shape destinationType)
-    end <- foo `deepseq` getCPUTime
+    putStrLn $ "head: " ++ head foo
+    end <- getCPUTime
     let diff = (fromIntegral (end - start)) / (10^12)
     printf "Computation time: %0.3f sec\n" (diff :: Double)
-    -}
 
-    -- putStrLn $ show ((end - start))
-
-    --putStrLn $ "wow we are here"
-    -- putStrLn $ unlines $ result
-    -- putStrLn $ unlines $ take 10 result
-
-
-
-
-    --let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x) && (isInfixOf "GHC.List.repeat" x)) --  && (isInfixOf "GHC.List.repeat (GHC.List.replicate" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
-
-    --let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) 
-    --let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) && (isInfixOf "!!" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
-
-
-
-    --let f x = ((isInfixOf "arg0" x)) 
-    let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) 
-
-    let filtered = filter f result
-    putStrLn $ "omg here"
-    --putStrLn $ "length: " ++ (show (length result))
-    --putStrLn $ unlines $ take 5 filtered
-
-
-
-
-    -- putStrLn $ "Length of filtered: " ++ (show $ length $ filtered)
-    -- putStrLn $ "wow we are here2"
-    -- let filtered2 = filter (\x -> (isInfixOf "(GHC.List.!!" x) || (isInfixOf "(Data.Maybe.Just" x) || (isInfixOf "(GHC.List.last" x) ) filtered 
-    -- putStrLn $ "wow we are here3"
-    -- putStrLn $ "length: " ++ show (length filtered2)
-    -- putStrLn $ unlines $ take 10 filtered
-    -- putStrLn $ "here4"
-    -- result <- dfs env messageChan 3 ("start", shape monospec)
-
-    -- print the result
-    -- putStrLn $ "result:" ++ unlines result
-
-    --print $ cst' ^. components
     return () 
 
 
@@ -171,12 +118,8 @@ dfsTop env messageChan depth hole = flip evalStateT emptyComps $ do
   lift $ putStrLn $ "unifiedFuns: " ++ (unlines $ map show unifiedFuncs)
   -- lift $ putStrLn $ "argUnifiedFuncs:" ++ show argUnifiedFuncs
   -- recurse, solving each unified component as a goal, solution is a list of programs
-  -- the first element of list2 is the list of first argument solutions
-  {-let trialThing x = do
-    answer <- dfs env messageChan depth x
-    lift $ putStrLn $ take 1 answer-}
-    
-  fmap concat $ mapM trialThing unifiedFuncs -- :: StateT Comps IO [String]
+
+  fmap concat $ mapM trialThing unifiedFuncs :: StateT Comps IO [String]
   where
     trialThing x = do 
                       blah@(answer:xs) <- dfs env messageChan depth x
@@ -196,19 +139,14 @@ getUnifiedFunctions :: Environment -> Chan Message -> [(Id, RSchema)] -> SType -
 getUnifiedFunctions envv messageChan xs goalType = do
 
   modify $ set components []
-  
-  -- lift $ putStrLn $ "allTypes: " ++ show allTypes
 
   st <- get
   let memoized = st ^. memoize :: Map SType [(Id, SType)]
 
   case Map.lookup goalType memoized of
     Just cs -> do
-      -- lift $ putStrLn $ "already in there: " ++ show goalType
-      -- lift $ putStrLn $ "unified components: " ++ show cs
       return cs
     Nothing -> do
-      -- lift $ putStrLn $ "not in there yet: " ++ show goalType
       helper envv messageChan xs goalType
       st <- get
       let cs = st ^. components
@@ -223,13 +161,6 @@ getUnifiedFunctions envv messageChan xs goalType = do
       | isInfixOf "@@" id = helper envv messageChan ys goalType
       | isInfixOf "Nil" id = helper envv messageChan ys goalType
       | otherwise = do
-        
-        -- lift $ putStrLn $ "\ngoalType: " ++ show goalType
-        -- lift $ putStrLn $ "id: " ++ id
-        -- lift $ putStrLn $ "schema: " ++ show schema
-        
-
-        -- lift $ putStrLn "not in there yet: " ++ show goalType
 
         let initSolverState = emptySolverState { _messageChan = messageChan }
         let t1 = shape (lastType (toMonotype schema))
@@ -584,3 +515,46 @@ dfs env messageChan depth (id, schema) = do
     -- dfsTop env messageChan 3 ("start", shape destinationType)
 
     -- cst' <- execStateT (getUnifiedFunctions env (Map.toList (env ^. symbols)) destinationType messageChan) initCompState
+
+
+
+    -- putStrLn $ show ((end - start))
+
+    --putStrLn $ "wow we are here"
+    -- putStrLn $ unlines $ result
+    -- putStrLn $ unlines $ take 10 result
+
+
+
+
+    --let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x) && (isInfixOf "GHC.List.repeat" x)) --  && (isInfixOf "GHC.List.repeat (GHC.List.replicate" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+
+    --let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) 
+    --let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) && (isInfixOf "!!" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+
+
+
+    --let f x = ((isInfixOf "arg0" x)) 
+    -- let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) 
+
+    -- let filtered = filter f result
+    -- putStrLn $ "omg here"
+    --putStrLn $ "length: " ++ (show (length result))
+    --putStrLn $ unlines $ take 5 filtered
+
+
+
+
+    -- putStrLn $ "Length of filtered: " ++ (show $ length $ filtered)
+    -- putStrLn $ "wow we are here2"
+    -- let filtered2 = filter (\x -> (isInfixOf "(GHC.List.!!" x) || (isInfixOf "(Data.Maybe.Just" x) || (isInfixOf "(GHC.List.last" x) ) filtered 
+    -- putStrLn $ "wow we are here3"
+    -- putStrLn $ "length: " ++ show (length filtered2)
+    -- putStrLn $ unlines $ take 10 filtered
+    -- putStrLn $ "here4"
+    -- result <- dfs env messageChan 3 ("start", shape monospec)
+
+    -- print the result
+    -- putStrLn $ "result:" ++ unlines result
+
+    --print $ cst' ^. components
