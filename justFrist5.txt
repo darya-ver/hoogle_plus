@@ -1,0 +1,12 @@
+(snd (Pair (arg2) (Data.Function.const (arg1) (arg0))))
+(snd (Pair (arg0) (Data.Function.const (arg1) (arg2))))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (arg1)))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (Data.Maybe.fromMaybe (arg1) (Data.Maybe.Nothing))))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (Data.Function.id (arg1))))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (Data.Function.const (arg1) (arg2))))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (Data.Function.const (arg1) (arg1))))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (Data.Function.const (arg1) (arg0))))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (Data.Function.const (arg1) (Data.Maybe.Nothing))))
+(snd (Pair (GHC.List.replicate (arg0) (arg2)) (Data.Function.const (arg1) (Data.ByteString.Lazy.getContents))))
+
+Computation time: 2.649 sec
