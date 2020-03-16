@@ -1,0 +1,17 @@
+(fst (Data.Bool.bool (Data.Maybe.fromJust (Data.Maybe.Nothing)) (Data.Maybe.fromJust (Data.Maybe.Nothing)) (Data.Either.isRight (arg0))))
+(GHC.List.sum (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (Data.Bool.bool (GHC.List.repeat (arg1)) (GHC.List.repeat (arg1)) (Data.Either.isRight (arg0))))
+(GHC.List.product (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (Data.Bool.bool (GHC.List.repeat (arg1)) (GHC.List.repeat (arg1)) (Data.Either.isRight (arg0))))
+(GHC.List.minimum (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (Data.Bool.bool (GHC.List.repeat (arg1)) (GHC.List.repeat (arg1)) (Data.Either.isRight (arg0))))
+(GHC.List.maximum (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (Data.Bool.bool (GHC.List.repeat (arg1)) (GHC.List.repeat (arg1)) (Data.Either.isRight (arg0))))
+(GHC.List.last (Data.Bool.bool (GHC.List.repeat (arg1)) (GHC.List.repeat (arg1)) (Data.Either.isRight (arg0))))
+(GHC.List.head (Data.Bool.bool (GHC.List.repeat (arg1)) (GHC.List.repeat (arg1)) (Data.Either.isRight (arg0))))
+(Data.Tuple.fst (Data.Bool.bool (Data.Maybe.fromJust (Data.Maybe.Nothing)) (Data.Maybe.fromJust (Data.Maybe.Nothing)) (Data.Either.isRight (arg0))))
+(Data.Maybe.fromMaybe (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (Data.Bool.bool (Data.Maybe.fromMaybe (Data.Maybe.Nothing) (Data.Maybe.Nothing)) (Data.Maybe.fromMaybe (Data.Maybe.Nothing) (Data.Maybe.Nothing)) (Data.Either.isRight (arg0))))
+(Data.Maybe.fromJust (Data.Bool.bool (Data.Maybe.fromMaybe (Data.Maybe.Nothing) (Data.Maybe.Nothing)) (Data.Maybe.fromMaybe (Data.Maybe.Nothing) (Data.Maybe.Nothing)) (Data.Either.isRight (arg0))))
+(Data.Function.id (Data.Bool.bool (arg1) (arg1) (Data.Either.isRight (arg0))))
+(Data.Function.const (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (Data.Either.fromRight (Data.Maybe.fromJust (Data.Maybe.Nothing)) (arg0)))
+(Data.Either.fromLeft (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (Data.Bool.bool (Data.Maybe.fromJust (Data.Maybe.Nothing)) (Data.Maybe.fromJust (Data.Maybe.Nothing)) (Data.Either.isRight (arg0))))
+(Data.Bool.bool (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (GHC.List.null (GHC.List.repeat (arg0))))
+((GHC.List.!!) (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))) (GHC.List.length (GHC.List.repeat (arg0))))
+head: "(fst (fst (Data.Maybe.fromJust (Data.Maybe.Nothing))))"
+Computation time: 0.336 sec
