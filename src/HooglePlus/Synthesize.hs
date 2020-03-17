@@ -99,6 +99,9 @@ synthesize searchParams goal messageChan = do
     start <- getCPUTime
     foo <- dfsTop env messageChan 3 (shape destinationType)
     putStrLn $ "head: " ++ show (head foo)
+    --let f x = ((isInfixOf "arg0" x)) --  && (isInfixOf "arg1" x) && (isInfixOf "arg2" x)) 
+    --let filtered = filter f foo
+    --putStrLn $ unlines $ take 10 filtered
     end <- getCPUTime
     let diff = (fromIntegral (end - start)) / (10^12)
     printf "Computation time: %0.3f sec\n" (diff :: Double)
@@ -120,10 +123,11 @@ dfsTop env messageChan depth hole = flip evalStateT emptyComps $ do
   -- recurse, solving each unified component as a goal, solution is a list of programs
 
   fmap concat $ mapM trialThing unifiedFuncs :: StateT Comps IO [String]
+  --fmap concat $ mapM (dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
   where
     trialThing x = do 
                       blah@(answer:xs) <- dfs env messageChan depth x
-                      let f x = ((isInfixOf "arg0" x)  && (isInfixOf "arg1" x) && (isInfixOf "arg2" x)) 
+                      let f x = ((isInfixOf "arg0" x)) --  && (isInfixOf "arg1" x) && (isInfixOf "arg2" x)) 
                       let filtered = filter f blah
                       when (not (null filtered)) (lift $ putStrLn $ head filtered)
                       return blah
