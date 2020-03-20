@@ -103,19 +103,11 @@ synthesize searchParams goal messageChan = do
     -- get return type
     -- get unified functions of the return type
     -- call DFS on all of those
-    result <- dfsTop env messageChan 2 (shape destinationType)
+    result <- dfsTop env messageChan 3 (shape destinationType)
 
     --putStrLn $ "wow we are here"
-    -- putStrLn $ unlines $ result
+    putStrLn $ unlines $ result
     -- putStrLn $ unlines $ take 10 result
-
-
-
-
-    let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
-    --let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) && (isInfixOf "!!" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
-    let filtered = filter f result
-    putStrLn $ unlines $ filtered
 
     -- putStrLn $ "Length of filtered: " ++ (show $ length $ filtered)
     -- putStrLn $ "wow we are here2"
@@ -146,8 +138,28 @@ dfsTop env messageChan depth hole = flip evalStateT emptyComps $ do
   -- lift $ putStrLn $ "argUnifiedFuncs:" ++ show argUnifiedFuncs
   -- recurse, solving each unified component as a goal, solution is a list of programs
   -- the first element of list2 is the list of first argument solutions
-  fmap concat $ mapM (dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
-  -- return []
+
+  --dfs ... (Id, SType) -> StateT Comps IO [String]
+
+  -- synthesize a list of programs for each top-level function unifying with goal
+  -- return the first solution that uses both args (if any)
+  let f x = ((isInfixOf "arg0" x) && (isInfixOf "arg1" x)) --  && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+  --let f x = (isInfixOf "one" x) && (isInfixOf "zero" x) && (isInfixOf "!!" x) && (not (isInfixOf "@@" x)) && (not (isInfixOf "Nil" x))
+  result <- fmap concat $ mapM (fmap (take 1 . filter f) . dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
+  -- lift $ print $ length result
+
+  -- st <- get
+  -- lift $ putStrLn "Done. Number of dfs calls at each depth: "
+  -- lift $ print (st ^. counter)
+
+  return result
+
+
+
+
+
+  -- synthesize all programs:
+  -- fmap concat $ mapM (dfs env messageChan depth) unifiedFuncs :: StateT Comps IO [String]
   
   
   -- (flip evalStateT) Map.empty (dfs env messageChan depth goal)
@@ -235,45 +247,54 @@ dfs env messageChan depth (id, schema) = do
   else do -- return []
 
     st <- get
-    -- add 1 to "number of times dfs called" counter
-    --modify $ set counter (1 + (st ^. counter))
 
-    --when (st ^. counter `mod` 1000 == 0) (lift $ print (st ^. counter))
+    let memoized = st ^. memoizeDfs :: Map (Int, SType) [String]
 
-    if (st ^. counter > 100000000) then
-      -- once we hit 1000000 just say the solution is "stop"
-      return ["stop"]
-    else do
+    case Map.lookup (depth, schema) memoized of
+      Just progs -> return progs
+      Nothing    -> do
 
-      -- collect all the argument types (the holes ?? we need to fill)
-      let args = allArgTypes schema
-      -- lift $ putStrLn $ "schema: " ++ show schema
-      -- lift $ putStrLn $ "args: " ++ show args
-      -- -- collect all the component types (which we might use to fill the holes)
-      let components = Map.toList (env ^. symbols)
+        -- add 1 to "number of times dfs called at this depth" counter
+        -- modify $ set counter (Map.insertWith (+) depth 1 (st ^. counter))
 
-      -- putStrLn $ "args:" ++ show args
-      -- putStrLn $ "depth:" ++ show depth
+        -- when (sum (st ^. counter) `mod` 1000 == 999) (lift $ putStr id >> print (st ^. counter))
+
+        if (sum (st ^. counter) > 100000000) then
+          -- once we hit 1000000 just say the solution is "stop"
+          return ["stop"]
+        else do
+
+          -- collect all the argument types (the holes ?? we need to fill)
+          let args = allArgTypes schema
+          -- lift $ putStrLn $ "schema: " ++ show schema
+          -- lift $ putStrLn $ "args: " ++ show args
+          -- -- collect all the component types (which we might use to fill the holes)
+          let components = Map.toList (env ^. symbols)
+
+          -- putStrLn $ "args:" ++ show args
+          -- putStrLn $ "depth:" ++ show depth
 
 
-      -- clear the list of components
+          -- clear the list of components
 
-      -- map each hole ?? to a list of component types that unify with the hole
-      argUnifiedFuncs <- mapM (getUnifiedFunctions env messageChan components) args :: StateT Comps IO [[(Id, SType)]]
-      -- putStrLn $ "argUnifiedFuncs:" ++ show argUnifiedFuncs
-      -- recurse, solving each unified component as a goal, solution is a list of programs
-      -- the first element of list2 is the list of first argument solutions
-      list2 <- mapM (fmap concat . mapM (dfs env messageChan (depth - 1))) argUnifiedFuncs :: StateT Comps IO [[String]]
-      -- putStrLn $ "list2: " ++ show list2
-      -- each arg hole is a list of programs
-      -- take cartesian product of args and prepend our func name
-      -- to get the list of resulting programs solving our original goal
-      -- the first element of list3 is a list of programs that fit as first argument
-      let list3 = sequence list2 :: [[String]]
-      -- let formatFn args = "(depth='" ++ show depth ++ "'" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
-      let formatFn args = "(" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
-      let list4 = map formatFn list3
-      return list4
+          -- map each hole ?? to a list of component types that unify with the hole
+          argUnifiedFuncs <- mapM (getUnifiedFunctions env messageChan components) args :: StateT Comps IO [[(Id, SType)]]
+          -- putStrLn $ "argUnifiedFuncs:" ++ show argUnifiedFuncs
+          -- recurse, solving each unified component as a goal, solution is a list of programs
+          -- the first element of list2 is the list of first argument solutions
+          list2 <- mapM (fmap concat . mapM (dfs env messageChan (depth - 1))) argUnifiedFuncs :: StateT Comps IO [[String]]
+          -- putStrLn $ "list2: " ++ show list2
+          -- each arg hole is a list of programs
+          -- take cartesian product of args and prepend our func name
+          -- to get the list of resulting programs solving our original goal
+          -- the first element of list3 is a list of programs that fit as first argument
+          let list3 = sequence list2 :: [[String]]
+          -- let formatFn args = "(depth='" ++ show depth ++ "'" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
+          let formatFn args = "(" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
+          let list4 = map formatFn list3
+
+          modify $ set memoizeDfs (Map.insert (depth, schema) list4 (st ^. memoizeDfs))
+          return list4
 
   -- print $ typeOf list
   -- each iteration of GUF returns IO [(Id, SType)]
