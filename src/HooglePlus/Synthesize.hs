@@ -96,7 +96,7 @@ synthesize searchParams goal messageChan = do
     foo <- dfsTop env messageChan 3 (shape destinationType) numArgs
     end <- getCPUTime
     
-    let diff = (fromIntegral (end - start)) / (10^12)
+    let diff = fromIntegral (end - start) / (10^12)
     printf "Computation time: %0.3f sec\n" (diff :: Double)
 
     return () 
@@ -115,13 +115,14 @@ dfsTop env messageChan depth hole numArgs = flip evalStateT emptyComps $ do
   unifiedFuncs <- getUnifiedFunctions env messageChan components hole :: StateT Comps IO [(Id, SType)]
 
   -- get the first valid program from each of the functions in unifiedFuncs
-  fmap concat $ mapM getFirstValidProgram unifiedFuncs :: StateT Comps IO [String]
+  -- fmap concat $ mapM getFirstValidProgram unifiedFuncs :: StateT Comps IO [String]
+  fmap concat <$> mapM getFirstValidProgram unifiedFuncs :: StateT Comps IO [String]
 
   where
     getFirstValidProgram x = do 
                       sampleProgram <- dfs env messageChan depth x
                       let filtered = filter (filterParams numArgs) sampleProgram
-                      when (not (null filtered)) (lift $ putStrLn $ head filtered)
+                      unless (null filtered) (lift $ putStrLn $ head filtered)
                       return sampleProgram
 
 -- 
@@ -129,8 +130,8 @@ dfsTop env messageChan depth hole numArgs = flip evalStateT emptyComps $ do
 -- 
 filterParams :: Int -> String -> Bool
 filterParams 0       _ = error "filterParams error: shouldn't have 0 args!" -- TODO maybe should be true here? 
-filterParams 1       x = isInfixOf "arg0" x
-filterParams numArgs x = (isInfixOf ("arg" ++ (show (numArgs - 1))) x) && (filterParams (numArgs - 1) x)
+filterParams 1       x = "arg0" `isInfixOf` x
+filterParams numArgs x = isInfixOf ("arg" ++ (show (numArgs - 1))) x && filterParams (numArgs - 1) x
 
 --
 -- gets list of components/functions that unify with a given type
