@@ -82,6 +82,8 @@ synthesize searchParams goal messageChan = do
     let rawSyms = env' ^. symbols
     let hoCands = env' ^. hoCandidates
     
+    -- testToRProgram
+
     env <- do
       let syms = Map.filter (not . isHigherOrder . toMonotype) rawSyms
       return $
@@ -132,6 +134,55 @@ filterParams :: Int -> String -> Bool
 filterParams 0       _ = error "filterParams error: shouldn't have 0 args!" -- TODO maybe should be true here? 
 filterParams 1       x = "arg0" `isInfixOf` x
 filterParams numArgs x = isInfixOf ("arg" ++ (show (numArgs - 1))) x && filterParams (numArgs - 1) x
+
+-- 
+-- converts final String program into RProgram
+--
+-- example:
+--      (fst (Pair (arg0) (arg0)))      ->       PApp "fst" [(PApp "Pair" [(PSymbol "arg0"), (PSymbol "arg0")]
+
+-- mkProgram :: BareProgram RType -> Program RType
+-- mkProgram bp = Program {
+--     content = bp,
+--     typeOf = AnyT
+--   }
+
+-- toRProgram :: String -> Program RType
+-- toRProgram _      = mkProgram $ PApp "fst" [mkProgram (PApp "Pair" [mkProgram $ PSymbol "arg0"], mkProgram (PSymbol "arg0"))]
+-- -- toRProgram (x:xs) = undefined
+
+-- -- i put this in 'synthesize' above so it runs instead of doing synthesis
+-- testToRProgram :: IO ()
+-- testToRProgram = do
+--   let inputType = AnyT
+--   putStrLn $ show $ toRProgram "(fst (Pair (arg0) (arg0)))"
+  
+-- -- | Type skeletons (parametrized by refinements)
+-- data TypeSkeleton r =
+--   ScalarT (BaseType r) r |
+--   FunctionT Id (TypeSkeleton r) (TypeSkeleton r) |
+--   AnyT |
+--   BotT 
+--   deriving (Eq, Ord, Generic)
+
+-- -- | Unrefined typed
+-- type SType = TypeSkeleton ()
+
+-- -- | Refined types
+-- type RType = TypeSkeleton Formula
+
+  
+-- data BareProgram t =
+--   PSymbol Id |                      -- ^ Symbol (variable or constant)
+--   PApp Id [Program t] |              -- ^ Function application
+
+-- data Program t = Program {
+--   content :: BareProgram t,
+--   typeOf :: t
+-- }
+
+-- type RProgram = Program RType
+
 
 --
 -- gets list of components/functions that unify with a given type
@@ -195,16 +246,15 @@ isGround _ = True
 -- runs dfs of given depth and keeps trying to find complete programs (no filtering yet)
 --
 dfs :: Environment -> Chan Message -> Int -> (Id, SType) -> StateT Comps IO [String]
-dfs _ _ 0 (id, schema) = do -- stop if depth is 0
-  if (isGround schema) then return ["(" ++ id ++ ")"] else return []
-dfs env messageChan depth (id, schema) = do
-  
-  -- check if schema is ground
-  if (isGround schema) 
-  then return ["(" ++ id ++ ")"]
-  else do
+dfs env messageChan depth (id, schema)
+  | isGround schema = return $ [
+      show $ Program { content = PSymbol id, typeOf = refineTop env schema }
+    ]
+  | depth == 0 = return []  -- stop if depth is 0
+  | otherwise = do
 
     st <- get
+
 
     -- collect all the argument types (the holes ?? we need to fill)
     let args = allArgTypes schema
@@ -216,14 +266,22 @@ dfs env messageChan depth (id, schema) = do
     argUnifiedFuncs <- mapM (getUnifiedFunctions env messageChan components) args :: StateT Comps IO [[(Id, SType)]]
 
     -- recurse, solving each unified component as a goal, solution is a list of programs
-    -- the first element of solutionsPerArg is the list of first argument solutions
-    solutionsPerArg <- mapM (fmap concat . mapM (dfs env messageChan (depth - 1))) argUnifiedFuncs :: StateT Comps IO [[String]]
+    -- the first element of solutionsPerArg is the list of solutions for the first argument
+    -- e.g. 
+    let recurse = dfs env messageChan (depth - 1)
+    solutionsPerArg <- mapM (fmap concat . mapM recurse) argUnifiedFuncs :: StateT Comps IO [[String]] -- [[a,b,c], [d,e,f]]
+    lift $ putStrLn $ show solutionsPerArg
 
     -- each arg hole is a list of programs
     -- take cartesian product of args and prepend our func name
     -- to get the list of resulting programs solving our original goal
     -- the first element of programsPerArg is a list of programs that fit as first argument
-    let programsPerArg = sequence solutionsPerArg :: [[String]]
-    let formatFn args = "(" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
+    let programsPerArg = sequence solutionsPerArg :: [[String]] -- [[a,d], [a,e], [a,f], [b,d], [b,e], [b,f], ...]
+    let formatFn :: [String] -> String
+    
+        formatFn args = "(" ++ intercalate " " (id:args) ++ ")" -- takes ["(a)","(b)"] to "(f (a) (b))"
     let finalResultList = map formatFn programsPerArg
     return finalResultList
+
+    --  intercalate ", " ["Lorem", "ipsum", "dolor"]
+    --   "Lorem, ipsum, dolor"
