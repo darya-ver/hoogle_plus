@@ -6,6 +6,7 @@ stack build :hplus
 
 # TWO ARGS
 #stack exec -- hplus "arg0:d -> arg1:[Maybe d] -> d" > topDown_tests/1_firstJust.txt
+## IGNORE THIS stack exec -- hplus "arg0:a -> arg1:[Maybe a] -> a" > topDown_tests/1_firstJust.txt
 #stack exec -- hplus "arg0:[c] -> arg1:[d] -> [[(c,d)]]" > topDown_tests/13_cartProduct.txt
 #stack exec -- hplus "arg0:Maybe d -> arg1:d -> Maybe d" > topDown_tests/14_maybe.txt
 #stack exec -- hplus "arg0:d -> arg1:[d] -> ([d], [d])" > topDown_tests/19_splitAtFirst.txt

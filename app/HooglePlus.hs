@@ -239,9 +239,9 @@ executeSearch :: SynquidParams -> SearchParams  -> String -> IO ()
 executeSearch synquidParams searchParams query = do
   env <- readEnv
   goal <- envToGoal env query
-  messageChan <- newChan
-  worker <- forkIO $ synthesize searchParams goal messageChan
-  readChan messageChan >>= (handleMessages messageChan)
+  messageChan <- newChan -- delete
+  worker <- forkIO $ synthesize searchParams goal messageChan -- delete part of beginning
+  readChan messageChan >>= (handleMessages messageChan) -- delete
   return ()
   where
     logLevel = searchParams ^. explorerLogLevel

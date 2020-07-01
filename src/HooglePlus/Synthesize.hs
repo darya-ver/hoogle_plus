@@ -82,12 +82,73 @@ synthesize searchParams goal messageChan = do
     let useHO = _useHO searchParams
     let rawSyms = env' ^. symbols
     let hoCands = env' ^. hoCandidates
-    
+
     env <- do
       let syms = Map.filter (not . isHigherOrder . toMonotype) rawSyms
       return $
           env'
               {_symbols = Map.withoutKeys syms $ Set.fromList hoCands, _hoCandidates = []}
+
+------------
+    -- let a0 = ScalarT (DatatypeT "A0" [] []) ()
+    -- let myPair x y = ScalarT (DatatypeT "Pair" [x, y] []) ()
+    -- let myList x = ScalarT (DatatypeT "List" [x] []) ()
+    -- let t1 = myPair (myList a0) (myList a0) :: SType
+    -- let t2 = myPair (myList (myList (myList a0))) a0 :: SType
+    
+    -- (freshVars, solverState) <- runStateT (freshType schema) initSolverState
+        
+    -- let initSolverState = emptySolverState { _messageChan = messageChan }
+
+    -- st' <- execStateT (solveTypeConstraint env t1 t2) initSolverState
+
+    -- let sub =  st' ^. typeAssignment
+    -- putStrLn $ show t1
+    -- putStrLn $ show t2
+    -- putStrLn $ show sub
+
+
+    
+-- t1: ([A0], [A0])    -> Pair (List A0) (List A0)
+-- t2: ([[[A0]]], A0)  -> Pair (List (List (List A0))) A0
+
+
+        -- (\a -> \b -> (a,b))
+        -- (\A0 -> \A1 -> (A0, A1))
+        --             -> A0
+        --  \A2 -> \A3 -> A1
+        --  \A4 -> \A5 -> A1
+        --  \A2 -> \A3 -> A1
+        --  \A2 -> \A3 -> A1
+        --  \A2 -> \A3 -> A1
+        --  \A2 -> \A3 -> A1
+        --  \A2 -> \A3 -> A1
+  
+-- backtracking Control.Monad.Logic
+
+-- original output:
+-- t1: ((([((A0))]) , ([((A0))]))
+-- t2: (([(([(([((A0))]))]))]) , (A0))
+-- schema: <a> . ((Int) -> (([((a))]) -> ((([((a))]) , ([((a))])))))
+-- goalType: (([(([(([((A0))]))]))]) , (A0)))
+
+-- interpretation:
+-- splitAt :: Int -> [a] -> ([a], [a])
+-- the return type (t1) is ([a], [a])
+-- the goal type (what we want to find) is ([[[a]]], a)
+-- it shouldn't unify
+
+-- new output: 
+-- (([((A0))]) , ([((A0))]))
+-- (([(([(([((A0))]))]))]) , (A0))
+
+    
+
+-- data BaseType r = BoolT | IntT | DatatypeT Id [TypeSkeleton r] [r] | TypeVarT Substitution Id
+--   deriving (Eq, Ord, Generic)
+--   ScalarT (BaseType r) r |
+--   FunctionT Id (TypeSkeleton r) (TypeSkeleton r) |
+------------
 
     -- used for figuring out which programs to filter (those without all arguments)
     let numArgs = length (Map.elems (env ^. arguments))
@@ -95,6 +156,7 @@ synthesize searchParams goal messageChan = do
     -- start timing and print out how long it took
     start <- getCPUTime
     printf "running dfsTop on %s\n" (show $ shape destinationType)
+    -- foo <- dfsTop env messageChan 3 (shape destinationType) numArgs
     foo <- dfsTop env messageChan 3 (shape destinationType) numArgs
     
     printf "done running dfsTop on %s\n" (show $ shape destinationType)
@@ -104,43 +166,53 @@ synthesize searchParams goal messageChan = do
     let diff = fromIntegral (end - start) / (10^12)
     printf "Computation time: %0.3f sec\n" (diff :: Double)
 
+------------
     return () 
 
 
--- 
+type CompsSolver = StateT Comps (StateT SolverState IO)
+-- http://book.realworldhaskell.org/read/monad-transformers.html#Stacking-multiple-monad-transformers
+
+--  helper :: StateT Comps (StateT SolverState IO) [String]
+--  emptyComps :: Comps
+--  helper `evalStateT` emptyComps :: StateT SolverState IO [String]
+--  (emptySolverState { _messageChan = messageChan }) :: SolverState
+--  helper `evalStateT` emptyComps `evalStateT` emptySolverState :: IO [String]
+
+--
 -- start off calling dfs with an empty memoize map
 --
-dfsTop :: Environment -> Chan Message -> Int -> SType -> Int -> IO [String]
-dfsTop env messageChan depth hole numArgs = flip evalStateT emptyComps $ do
-  
-  -- collect all the component types (which we might use to fill the holes)
-  let components = Map.toList (env ^. symbols)
-  -- lift $ printf "here1"
-  -- map each hole ?? to a list of component types that unify with the hole
-  unifiedFuncs <- getUnifiedFunctions env messageChan components hole :: StateT Comps IO [(Id, SType)]
-  -- lift $ printf "here2"
-  -- get the first valid program from each of the functions in unifiedFuncs
-  -- fmap concat $ mapM getFirstValidProgram unifiedFuncs :: StateT Comps IO [String]
-  fmap concat <$> mapM getFirstValidProgram (take 13 unifiedFuncs) :: StateT Comps IO [String]
+dfsTop :: Environment -> Chan Message -> Int -> SType -> Int -> IO [String] -- TODO change to RProgram
+dfsTop env messageChan depth hole numArgs = helper `evalStateT` emptyComps `evalStateT` (emptySolverState { _messageChan = messageChan })
   where
+    helper :: CompsSolver [String]
+    helper = do
+      -- collect all the component types (which we might use to fill the holes)
+      let components = Map.toList (env ^. symbols)
+      -- map each hole ?? to a list of component types that unify with the hole
+      unifiedFuncs <- getUnifiedFunctions env messageChan components hole :: CompsSolver [(Id, SType)]
+      liftIO $ putStrLn $ show unifiedFuncs
+      -- get the first valid program from each of the functions in unifiedFuncs
+      fmap concat $ mapM getFirstValidProgram unifiedFuncs :: CompsSolver [String]
+      -- fmap concat <$> mapM getFirstValidProgram (drop 12 unifiedFuncs) :: CompsSolver [String]
+    
+    getFirstValidProgram :: (Id, SType) -> CompsSolver [String]
     getFirstValidProgram x = do 
-                      sampleProgram <- map show <$> dfs env messageChan depth x
+                      sampleProgram <- map show <$> (dfs env messageChan depth x :: CompsSolver [RProgram])
                       let filtered = filter (filterParams numArgs) sampleProgram
-                      unless (null filtered) (lift $ putStrLn $ head filtered)
+                      unless (null filtered) (liftIO $ putStrLn $ head filtered) -- we print out the first result for each function
                       return sampleProgram
-
--- 
--- determines if the result has the appropriate arguments given the number of args
--- 
-filterParams :: Int -> String -> Bool
-filterParams 0       _ = error "filterParams error: shouldn't have 0 args!" -- TODO maybe should be true here? 
-filterParams 1       x = "arg0" `isInfixOf` x
-filterParams numArgs x = isInfixOf ("arg" ++ (show (numArgs - 1))) x && filterParams (numArgs - 1) x
+    
+    -- determines if the result has the appropriate arguments given the number of args
+    filterParams :: Int -> String -> Bool
+    filterParams 0       _ = error "filterParams error: shouldn't have 0 args!" -- TODO maybe should be true here? 
+    filterParams 1       x = "arg0" `isInfixOf` x
+    filterParams numArgs x = isInfixOf ("arg" ++ (show (numArgs - 1))) x && filterParams (numArgs - 1) x
 
 --
 -- gets list of components/functions that unify with a given type
 -- 
-getUnifiedFunctions :: Environment -> Chan Message -> [(Id, RSchema)] -> SType -> StateT Comps IO [(Id, SType)]
+getUnifiedFunctions :: Environment -> Chan Message -> [(Id, RSchema)] -> SType -> CompsSolver [(Id, SType)]
 getUnifiedFunctions envv messageChan xs goalType = do
 
   modify $ set components []
@@ -157,9 +229,9 @@ getUnifiedFunctions envv messageChan xs goalType = do
       let cs = st ^. components
       modify $ set memoize (Map.insert goalType cs (st ^. memoize))
       return $ st ^. components
-
+  
   where 
-    helper :: Environment -> Chan Message -> [(Id, RSchema)] -> SType -> StateT Comps IO ()
+    helper :: Environment -> Chan Message -> [(Id, RSchema)] -> SType -> CompsSolver ()
     helper _ _ [] _ = return ()
 
     -- skip components with @@ or Nil -- TODO fix this so that we can use these things too
@@ -168,9 +240,12 @@ getUnifiedFunctions envv messageChan xs goalType = do
       -- | isInfixOf "Nil"     id = helper envv messageChan ys goalType
       -- | isInfixOf "Nothing" id = helper envv messageChan ys goalType
       -- | otherwise = do
+
+    -- lift get -> SolverState
+    -- get -> Comps
     helper envv messageChan ( v@(id, schema) : ys) goalType = do
 
-        let initSolverState = emptySolverState { _messageChan = messageChan }
+        -- let initSolverState = emptySolverState { _messageChan = messageChan } -- records a counter for a0 a1 a2 etc
 -----------------------
 
         -- let t1 = shape (lastType (toMonotype schema)) :: SType
@@ -191,13 +266,46 @@ getUnifiedFunctions envv messageChan xs goalType = do
         
 -----------------------
 ---------------
-        (freshVars, solverState) <- runStateT (freshType schema) initSolverState
+
+        -- liftIO $ putStrLn $ "------------------"
+        -- liftIO $ putStrLn $ "------------------"
+        -- liftIO $ putStrLn $ show $ goalType
+        -- liftIO $ putStrLn $ "here0"
+        solverStat <- lift get
+        (freshVars, solverState) <- runStateT (freshType schema) solverStat
+        lift $ put solverState
+        -- liftIO $ putStrLn $ "here1"
+        -- freshVars <- lift (freshType schema)
+        
+        -- liftIO $ putStrLn $ show $ goalType
         let t1 = shape (lastType freshVars) -- turn it into an SType of the return value
         let t2 = goalType :: SType
-        
+        -- liftIO $ putStrLn $ "here2"
+
+        lift $ modify $ set isChecked True
+        lift $ modify $ set typeAssignment Map.empty
+
+        -- liftIO $ putStrLn $ "here3"
+        solverState <- lift get
+
+        -- liftIO $ putStrLn $ "here4"
         st' <- execStateT (solveTypeConstraint envv t1 t2) solverState
+        lift $ put st'
+
+        -- liftIO $ putStrLn $ "here5"
+        -- st' <- lift $ do
+          -- freshType
+          -- solveTypeConstraint
+          -- get
+        -- substitution
+        -- check results
+
+        -- lift (solveTypeConstraint envv t1 t2)
+        -- st' <- lift get
+
         let sub =  st' ^. typeAssignment
         let checkResult = st' ^. isChecked
+        -- liftIO $ putStrLn $ show (id, "      ", t1, "      ", t2, "      ",freshVars,"      ",checkResult)
 
         let schema' = stypeSubstitute sub (shape freshVars)
 
@@ -207,80 +315,6 @@ getUnifiedFunctions envv messageChan xs goalType = do
             modify $ set components ((id, schema') : st ^. components) 
           else return ()
         helper envv messageChan ys goalType
----------------
-
-
-        -- helper envv messageChan ys goalType
-
-        -- let t1 = shape (lastType (toMonotype schema)) :: SType -- (a0 -> b0)
-        -- let t2 = goalType :: SType
-
-        -- -- | Type skeletons (parametrized by refinements)
-        -- data TypeSkeleton r =
-        -- ScalarT (BaseType r) r |
-        -- FunctionT Id (TypeSkeleton r) (TypeSkeleton r) |
-        
-        -- -- | Replace all bound type variables with fresh free variables
-        -- freshType :: MonadIO m => RSchema -> PNSolver m RType
-        -- freshType = freshType' Map.empty []
-        --   where
-        --     freshType' subst constraints (ForallT a sch) = do
-        --         a' <- freshId "A"
-        --         freshType' (Map.insert a (vart a' ftrue) subst) (a':constraints) sch
-        --     freshType' subst constraints (Monotype t) = return (typeSubstitute subst t)
-
-        --
-        -- forall a0 (forall b (\(a,b) -> (b,a)))
-
-        -- -- | Unrefined typed
-        -- type SType = TypeSkeleton ()
-
-        -- you were trying to unify t1:`(b, a)` with t2:`(a, b)`
-        -- 
-        -- let solver :: (MonadIO m) => PNSolver m (Bool, SType)
-        --     solver = do
-        --       freshVars <- freshType schema :: (MonadIO m) => PNSolver m RType
-        --       let t1 = shape (lastType freshVars) -- turn it into an SType of the return value
-        --       let t2 = goalType :: SType
-        --       solveTypeConstraint envv t1 t2
-        --       st' <- get
-        --       let sub = st' ^. typeAssignment -- (a0 -> Int) the unified stuff (a -> a0) (a0 -> Int)
-        --       let checkResult = st' ^. isChecked
-        --       -- the rschema version of stypeSubstitute
-        --       let schema' = stypeSubstitute sub (shape freshVars) :: SType
-        --       return (checkResult, schema')
-
-        -- (freshVars, solverState) <- runStateT (freshType schema) initSolverState
-
-        -- -- solveTypeConstraint envv t1 t2
-        -- st' <- get
-
-        -- let sub = st' ^. typeAssignment -- (a0 -> Int) the unified stuff (a -> a0) (a0 -> Int)
-        -- let checkResult = st' ^. isChecked
-        -- -- the rschema version of stypeSubstitute
-        -- let schema' = stypeSubstitute sub (shape freshVars) :: SType
-
-        -- -- let (checkResult, schema') = evalStateT solver initSolverState :: _
-
-
-        -- -- st' <- execStateT (solveTypeConstraint envv t1 t2) initSolverState
-
-        -- let sub =  st' ^. typeAssignment -- (a0 -> Int) the unified stuff (a -> a0) (a0 -> Int)
-        -- let checkResult = st' ^. isChecked
-        -- -- the rschema version of stypeSubstitute
-        -- let schema' = stypeSubstitute sub (shape $ toMonotype schema)
-
-        -- st <- get
-        -- if (checkResult) 
-        --   then do
-        --     modify $ set components ((id, schema') : st ^. components) 
-        --   else return ()
-        
-        -- helper envv messageChan ys goalType
-
------------------------
-
-        
 
 -----------------------
 
@@ -294,7 +328,7 @@ isGround _ = True
 -- 
 -- runs dfs of given depth and keeps trying to find complete programs (no filtering yet)
 --
-dfs :: Environment -> Chan Message -> Int -> (Id, SType) -> StateT Comps IO [RProgram]
+dfs :: Environment -> Chan Message -> Int -> (Id, SType) -> CompsSolver [RProgram]
 dfs env messageChan depth (id, schema)
   | isGround schema = return $ [
       Program { content = PSymbol id, typeOf = refineTop env schema }
@@ -312,13 +346,13 @@ dfs env messageChan depth (id, schema)
     let components = Map.toList (env ^. symbols)
 
     -- map each hole ?? to a list of component types that unify with the hole
-    argUnifiedFuncs <- mapM (getUnifiedFunctions env messageChan components) args :: StateT Comps IO [[(Id, SType)]]
+    argUnifiedFuncs <- mapM (getUnifiedFunctions env messageChan components) args :: CompsSolver [[(Id, SType)]]
 
     -- recurse, solving each unified component as a goal, solution is a list of programs
     -- the first element of solutionsPerArg is the list of solutions for the first argument
     -- e.g. 
     let recurse = dfs env messageChan (depth - 1)
-    solutionsPerArg <- mapM (fmap concat . mapM recurse) argUnifiedFuncs :: StateT Comps IO [[RProgram]] -- [[a,b,c], [d,e,f]]
+    solutionsPerArg <- mapM (fmap concat . mapM recurse) argUnifiedFuncs :: CompsSolver [[RProgram]] -- [[a,b,c], [d,e,f]]
     
     -- each arg hole is a list of programs
     -- take cartesian product of args and prepend our func name
@@ -329,54 +363,3 @@ dfs env messageChan depth (id, schema)
         formatFn args = Program { content = PApp id args, typeOf = refineTop env schema }
     let finalResultList = map formatFn programsPerArg
     return finalResultList
-
-    --  intercalate ", " ["Lorem", "ipsum", "dolor"]
-    --   "Lorem, ipsum, dolor"
-
--- 
--- converts final String program into RProgram
---
--- example:
---      (fst (Pair (arg0) (arg0)))      ->       PApp "fst" [(PApp "Pair" [(PSymbol "arg0"), (PSymbol "arg0")]
-
--- mkProgram :: BareProgram RType -> Program RType
--- mkProgram bp = Program {
---     content = bp,
---     typeOf = AnyT
---   }
-
--- toRProgram :: String -> Program RType
--- toRProgram _      = mkProgram $ PApp "fst" [mkProgram (PApp "Pair" [mkProgram $ PSymbol "arg0"], mkProgram (PSymbol "arg0"))]
--- -- toRProgram (x:xs) = undefined
-
--- -- i put this in 'synthesize' above so it runs instead of doing synthesis
--- testToRProgram :: IO ()
--- testToRProgram = do
---   let inputType = AnyT
---   putStrLn $ show $ toRProgram "(fst (Pair (arg0) (arg0)))"
-  
--- -- | Type skeletons (parametrized by refinements)
--- data TypeSkeleton r =
---   ScalarT (BaseType r) r |
---   FunctionT Id (TypeSkeleton r) (TypeSkeleton r) |
---   AnyT |
---   BotT 
---   deriving (Eq, Ord, Generic)
-
--- -- | Unrefined typed
--- type SType = TypeSkeleton ()
-
--- -- | Refined types
--- type RType = TypeSkeleton Formula
-
-  
--- data BareProgram t =
---   PSymbol Id |                      -- ^ Symbol (variable or constant)
---   PApp Id [Program t] |              -- ^ Function application
-
--- data Program t = Program {
---   content :: BareProgram t,
---   typeOf :: t
--- }
-
--- type RProgram = Program RType
