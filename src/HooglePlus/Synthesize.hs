@@ -240,68 +240,19 @@ getUnifiedFunctions envv messageChan xs goalType = do
       -- | isInfixOf "Nil"     id = helper envv messageChan ys goalType
       -- | isInfixOf "Nothing" id = helper envv messageChan ys goalType
       -- | otherwise = do
-
-    -- lift get -> SolverState
-    -- get -> Comps
+    
     helper envv messageChan ( v@(id, schema) : ys) goalType = do
+        (freshVars, st') <- lift $ do
+          freshVars <- freshType schema
+          let t1 = shape (lastType freshVars) :: SType
+          let t2 = goalType :: SType
 
-        -- let initSolverState = emptySolverState { _messageChan = messageChan } -- records a counter for a0 a1 a2 etc
------------------------
+          modify $ set isChecked True
+          modify $ set typeAssignment Map.empty
 
-        -- let t1 = shape (lastType (toMonotype schema)) :: SType
-        -- let t2 = goalType :: SType
-
-        -- st' <- execStateT (solveTypeConstraint envv t1 t2) initSolverState
-
-        -- let sub =  st' ^. typeAssignment
-        -- let checkResult = st' ^. isChecked
-
-        -- let schema' = stypeSubstitute sub (shape $ toMonotype schema)
-
-        -- st <- get
-        -- if (checkResult) 
-        --   then do
-        --     modify $ set components ((id, schema') : st ^. components) 
-        --   else return ()
-        
------------------------
----------------
-
-        -- liftIO $ putStrLn $ "------------------"
-        -- liftIO $ putStrLn $ "------------------"
-        -- liftIO $ putStrLn $ show $ goalType
-        -- liftIO $ putStrLn $ "here0"
-        solverStat <- lift get
-        (freshVars, solverState) <- runStateT (freshType schema) solverStat
-        lift $ put solverState
-        -- liftIO $ putStrLn $ "here1"
-        -- freshVars <- lift (freshType schema)
-        
-        -- liftIO $ putStrLn $ show $ goalType
-        let t1 = shape (lastType freshVars) -- turn it into an SType of the return value
-        let t2 = goalType :: SType
-        -- liftIO $ putStrLn $ "here2"
-
-        lift $ modify $ set isChecked True
-        lift $ modify $ set typeAssignment Map.empty
-
-        -- liftIO $ putStrLn $ "here3"
-        solverState <- lift get
-
-        -- liftIO $ putStrLn $ "here4"
-        st' <- execStateT (solveTypeConstraint envv t1 t2) solverState
-        lift $ put st'
-
-        -- liftIO $ putStrLn $ "here5"
-        -- st' <- lift $ do
-          -- freshType
-          -- solveTypeConstraint
-          -- get
-        -- substitution
-        -- check results
-
-        -- lift (solveTypeConstraint envv t1 t2)
-        -- st' <- lift get
+          solveTypeConstraint envv t1 t2
+          st <- get
+          return (freshVars, st)
 
         let sub =  st' ^. typeAssignment
         let checkResult = st' ^. isChecked
